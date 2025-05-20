@@ -43,4 +43,13 @@
 - [구현 로드맵 및 발전 방향](./implementation-roadmap.md)
 - [응용 분야별 특화 프로토콜](./specialized-applications.md)
 - [사용자 인터페이스 디자인](./user-interface-design.md)
+- [구현 성공을 위한 핵심 조건](./key-success-factors.md)
 - [시스템 아키텍처 다이어그램](./images/system-architecture.svg)
+
+## 코드 예시
+
+알고리즘 및 모델링 코드 예시를 확인할 수 있습니다:
+
+- [AI 분석 모델 코드](./code/ai_models/)
+  - [생체신호 전처리 모듈](./code/ai_models/biosignal_preprocessing.py)
+  - [강화학습 기반 자극 최적화](./code/ai_models/reinforcement_learning.py)
