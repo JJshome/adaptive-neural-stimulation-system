@@ -42,4 +42,5 @@
 - [신경재생 특수 프로토콜](./neural-regen-protocols.md)
 - [구현 로드맵 및 발전 방향](./implementation-roadmap.md)
 - [응용 분야별 특화 프로토콜](./specialized-applications.md)
+- [사용자 인터페이스 디자인](./user-interface-design.md)
 - [시스템 아키텍처 다이어그램](./images/system-architecture.svg)
