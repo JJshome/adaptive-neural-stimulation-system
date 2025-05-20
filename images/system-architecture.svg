@@ -1,0 +1,109 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="800" height="600" fill="#f8f9fa" />
+  
+  <!-- 제목 -->
+  <text x="400" y="40" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">
+    신경재생을 위한 적응형 신경 전기자극 시스템 아키텍처
+  </text>
+  
+  <!-- 하드웨어 아키텍처 섹션 -->
+  <rect x="50" y="80" width="220" height="460" rx="10" fill="#e6f3ff" stroke="#2196f3" stroke-width="2" />
+  <text x="160" y="110" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#2196f3">
+    하드웨어 아키텍처
+  </text>
+  
+  <!-- 하드웨어 구성요소 -->
+  <rect x="70" y="130" width="180" height="80" rx="5" fill="#ffffff" stroke="#2196f3" stroke-width="1" />
+  <text x="160" y="160" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">생체신호 감지 시스템</text>
+  <text x="160" y="180" font-family="Arial" font-size="12" text-anchor="middle">멀티모달 센서 어레이</text>
+  <text x="160" y="195" font-family="Arial" font-size="12" text-anchor="middle">센서 융합 하드웨어</text>
+  
+  <rect x="70" y="230" width="180" height="80" rx="5" fill="#ffffff" stroke="#2196f3" stroke-width="1" />
+  <text x="160" y="260" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">정밀 자극 전달 시스템</text>
+  <text x="160" y="280" font-family="Arial" font-size="12" text-anchor="middle">다채널 고정밀 자극 발생기</text>
+  <text x="160" y="295" font-family="Arial" font-size="12" text-anchor="middle">지능형 전극 인터페이스</text>
+  
+  <rect x="70" y="330" width="180" height="80" rx="5" fill="#ffffff" stroke="#2196f3" stroke-width="1" />
+  <text x="160" y="360" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">지능형 제어 하드웨어</text>
+  <text x="160" y="380" font-family="Arial" font-size="12" text-anchor="middle">임베디드 컴퓨팅 모듈</text>
+  <text x="160" y="395" font-family="Arial" font-size="12" text-anchor="middle">고급 전원 관리 시스템</text>
+  
+  <rect x="70" y="430" width="180" height="80" rx="5" fill="#ffffff" stroke="#2196f3" stroke-width="1" />
+  <text x="160" y="460" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">무선 시스템</text>
+  <text x="160" y="480" font-family="Arial" font-size="12" text-anchor="middle">무선 전력 및 데이터 전송</text>
+  <text x="160" y="495" font-family="Arial" font-size="12" text-anchor="middle">생체조직 투과 최적화</text>
+  
+  <!-- 소프트웨어 아키텍처 섹션 -->
+  <rect x="290" y="80" width="220" height="460" rx="10" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" />
+  <text x="400" y="110" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#4caf50">
+    소프트웨어 아키텍처
+  </text>
+  
+  <!-- 소프트웨어 구성요소 -->
+  <rect x="310" y="130" width="180" height="80" rx="5" fill="#ffffff" stroke="#4caf50" stroke-width="1" />
+  <text x="400" y="160" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">신호 처리 및 분석</text>
+  <text x="400" y="180" font-family="Arial" font-size="12" text-anchor="middle">고급 생체신호 처리</text>
+  <text x="400" y="195" font-family="Arial" font-size="12" text-anchor="middle">신경 활동 특성화</text>
+  
+  <rect x="310" y="230" width="180" height="80" rx="5" fill="#ffffff" stroke="#4caf50" stroke-width="1" />
+  <text x="400" y="260" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">적응형 자극 제어</text>
+  <text x="400" y="280" font-family="Arial" font-size="12" text-anchor="middle">다층 피드백 제어</text>
+  <text x="400" y="295" font-family="Arial" font-size="12" text-anchor="middle">강화학습 기반 최적화</text>
+  
+  <rect x="310" y="330" width="180" height="80" rx="5" fill="#ffffff" stroke="#4caf50" stroke-width="1" />
+  <text x="400" y="360" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">AI 분석 및 추론</text>
+  <text x="400" y="380" font-family="Arial" font-size="12" text-anchor="middle">신경 회복 예측 모델</text>
+  <text x="400" y="395" font-family="Arial" font-size="12" text-anchor="middle">치료 반응 패턴 분석</text>
+  
+  <rect x="310" y="430" width="180" height="80" rx="5" fill="#ffffff" stroke="#4caf50" stroke-width="1" />
+  <text x="400" y="460" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">클라우드 플랫폼</text>
+  <text x="400" y="480" font-family="Arial" font-size="12" text-anchor="middle">보안 데이터 인프라</text>
+  <text x="400" y="495" font-family="Arial" font-size="12" text-anchor="middle">빅데이터 분석 파이프라인</text>
+  
+  <!-- 특수 신경재생 프로토콜 섹션 -->
+  <rect x="530" y="80" width="220" height="460" rx="10" fill="#fff8e1" stroke="#ffc107" stroke-width="2" />
+  <text x="640" y="110" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#ff9800">
+    특수 신경재생 프로토콜
+  </text>
+  
+  <!-- 프로토콜 구성요소 -->
+  <rect x="550" y="130" width="180" height="80" rx="5" fill="#ffffff" stroke="#ff9800" stroke-width="1" />
+  <text x="640" y="160" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">분자 메커니즘 기반</text>
+  <text x="640" y="180" font-family="Arial" font-size="12" text-anchor="middle">BDNF/TrkB 경로 활성화</text>
+  <text x="640" y="195" font-family="Arial" font-size="12" text-anchor="middle">cAMP/PKA/CREB 신호전달</text>
+  
+  <rect x="550" y="230" width="180" height="80" rx="5" fill="#ffffff" stroke="#ff9800" stroke-width="1" />
+  <text x="640" y="260" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">세포 유형별 타겟팅</text>
+  <text x="640" y="280" font-family="Arial" font-size="12" text-anchor="middle">슈반 세포 활성화</text>
+  <text x="640" y="295" font-family="Arial" font-size="12" text-anchor="middle">대식세포 분극화 최적화</text>
+  
+  <rect x="550" y="330" width="180" height="80" rx="5" fill="#ffffff" stroke="#ff9800" stroke-width="1" />
+  <text x="640" y="360" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">신경 섬유 선택적 자극</text>
+  <text x="640" y="380" font-family="Arial" font-size="12" text-anchor="middle">운동신경 재생 특화</text>
+  <text x="640" y="395" font-family="Arial" font-size="12" text-anchor="middle">감각신경 재생 및 통합</text>
+  
+  <rect x="550" y="430" width="180" height="80" rx="5" fill="#ffffff" stroke="#ff9800" stroke-width="1" />
+  <text x="640" y="460" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle">재생 단계별 맞춤형</text>
+  <text x="640" y="480" font-family="Arial" font-size="12" text-anchor="middle">급성기/아급성기 최적화</text>
+  <text x="640" y="495" font-family="Arial" font-size="12" text-anchor="middle">재생기/통합기 프로토콜</text>
+  
+  <!-- 연결선 -->
+  <!-- 하드웨어-소프트웨어 연결 -->
+  <path d="M270 170 L310 170" stroke="#666" stroke-width="2" stroke-dasharray="5,3" />
+  <path d="M270 270 L310 270" stroke="#666" stroke-width="2" stroke-dasharray="5,3" />
+  <path d="M270 370 L310 370" stroke="#666" stroke-width="2" stroke-dasharray="5,3" />
+  <path d="M270 470 L310 470" stroke="#666" stroke-width="2" stroke-dasharray="5,3" />
+  
+  <!-- 소프트웨어-프로토콜 연결 -->
+  <path d="M490 170 L550 170" stroke="#666" stroke-width="2" stroke-dasharray="5,3" />
+  <path d="M490 270 L550 270" stroke="#666" stroke-width="2" stroke-dasharray="5,3" />
+  <path d="M490 370 L550 370" stroke="#666" stroke-width="2" stroke-dasharray="5,3" />
+  <path d="M490 470 L550 470" stroke="#666" stroke-width="2" stroke-dasharray="5,3" />
+  
+  <!-- 시스템 통합 정보 -->
+  <rect x="50" y="550" width="700" height="30" rx="5" fill="#ede7f6" stroke="#673ab7" stroke-width="1" />
+  <text x="400" y="570" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#673ab7">
+    통합 시스템: 개인화된 신경재생을 위한 실시간 적응형 생체신호 기반 자극 제어
+  </text>
+</svg>
