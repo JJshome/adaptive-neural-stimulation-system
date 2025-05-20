@@ -1,0 +1,90 @@
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="800" height="500" fill="#f8f9fa" />
+  
+  <!-- 제목 -->
+  <text x="400" y="30" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#333333">
+    치료 모니터링 인터페이스
+  </text>
+  
+  <!-- 모바일 폰 프레임 -->
+  <rect x="250" y="50" width="300" height="400" rx="20" fill="#ffffff" stroke="#dddddd" stroke-width="2" />
+  
+  <!-- 상태 표시줄 -->
+  <rect x="250" y="50" width="300" height="30" rx="20" fill="#5E72E4" />
+  <rect x="250" y="50" width="300" height="30" rx="20" opacity="0.8" fill="#5E72E4" />
+  
+  <!-- 세션 정보 헤더 -->
+  <rect x="250" y="80" width="300" height="70" fill="#f8f9fa" />
+  <text x="270" y="105" font-family="Arial" font-size="18" font-weight="bold" fill="#333333">운동신경 재생 프로토콜</text>
+  <text x="270" y="125" font-family="Arial" font-size="14" fill="#666666">활성 상태 | 15:32 / 30:00</text>
+  
+  <!-- 활성 전극 위치 시각화 -->
+  <ellipse cx="400" cy="200" rx="80" ry="100" fill="#F5F7FA" stroke="#E5E9F2" stroke-width="1" />
+  <ellipse cx="400" cy="220" rx="10" ry="12" fill="#ffffff" stroke="#5E72E4" stroke-width="2" />
+  <ellipse cx="380" cy="180" rx="10" ry="12" fill="#ffffff" stroke="#5E72E4" stroke-width="2" />
+  <ellipse cx="420" cy="180" rx="10" ry="12" fill="#ffffff" stroke="#5E72E4" stroke-width="2" />
+  <ellipse cx="380" cy="240" rx="10" ry="12" fill="#ffffff" stroke="#5E72E4" stroke-width="1" />
+  <ellipse cx="420" cy="240" rx="10" ry="12" fill="#ffffff" stroke="#5E72E4" stroke-width="1" />
+  
+  <!-- 활성 전극 표시 -->
+  <ellipse cx="380" cy="180" rx="10" ry="12" fill="#5E72E4" opacity="0.6" />
+  <ellipse cx="420" cy="180" rx="10" ry="12" fill="#5E72E4" opacity="0.6" />
+  
+  <!-- 강도 파형 표시 -->
+  <rect x="270" y="300" width="260" height="70" fill="#f8f9fa" rx="5" />
+  
+  <!-- 파형 그래프 -->
+  <polyline points="275,335 285,335 295,315 305,335 315,335 325,315 335,335 345,335 355,315 365,335 375,335 385,315 395,335 405,335 415,315 425,335 435,335 445,315 455,335 465,335 475,315 485,335 495,335 505,315 515,335 525,335" 
+    fill="none" stroke="#5E72E4" stroke-width="2" />
+  
+  <!-- 파라미터 표시 -->
+  <text x="270" y="290" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">자극 파라미터</text>
+  <rect x="270" y="380" width="80" height="30" rx="5" fill="#ffffff" stroke="#E5E9F2" stroke-width="1" />
+  <text x="310" y="400" font-family="Arial" font-size="12" text-anchor="middle" fill="#333333">20Hz</text>
+  
+  <rect x="360" y="380" width="80" height="30" rx="5" fill="#ffffff" stroke="#E5E9F2" stroke-width="1" />
+  <text x="400" y="400" font-family="Arial" font-size="12" text-anchor="middle" fill="#333333">350µs</text>
+  
+  <rect x="450" y="380" width="80" height="30" rx="5" fill="#ffffff" stroke="#E5E9F2" stroke-width="1" />
+  <text x="490" y="400" font-family="Arial" font-size="12" text-anchor="middle" fill="#333333">5.5mA</text>
+  
+  <!-- 강도 조절 슬라이더 -->
+  <text x="270" y="430" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">강도 조절</text>
+  <rect x="330" y="425" width="150" height="6" rx="3" fill="#E5E9F2" />
+  <rect x="330" y="425" width="90" height="6" rx="3" fill="#5E72E4" />
+  <circle cx="420" cy="428" r="10" fill="#ffffff" stroke="#5E72E4" stroke-width="2" />
+  <text x="490" y="430" font-family="Arial" font-size="12" fill="#666666">60%</text>
+  
+  <!-- 센서 및 장치 상태 패널 -->
+  <rect x="570" y="80" width="200" height="370" rx="10" fill="#ffffff" stroke="#E5E9F2" stroke-width="2" />
+  
+  <!-- 패널 제목 -->
+  <text x="670" y="110" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" fill="#333333">생체신호 모니터링</text>
+  
+  <!-- 신호 상태 표시 -->
+  <!-- EMG 신호 -->
+  <text x="590" y="150" font-family="Arial" font-size="14" fill="#333333">EMG 신호</text>
+  <rect x="590" y="160" width="160" height="40" rx="5" fill="#f8f9fa" />
+  <polyline points="595,180 605,185 615,175 625,190 635,170 645,180 655,165 665,185 675,175 685,195 695,160 705,180 715,175 725,180 735,170 745,180" 
+    fill="none" stroke="#2DCE89" stroke-width="1.5" />
+  
+  <!-- ENG 신호 -->
+  <text x="590" y="220" font-family="Arial" font-size="14" fill="#333333">ENG 신호</text>
+  <rect x="590" y="230" width="160" height="40" rx="5" fill="#f8f9fa" />
+  <polyline points="595,250 605,245 615,255 625,250 635,260 645,250 655,255 665,245 675,250 685,240 695,250 705,245 715,255 725,250 735,260 745,250" 
+    fill="none" stroke="#11CDEF" stroke-width="1.5" />
+  
+  <!-- 혈류 상태 -->
+  <text x="590" y="290" font-family="Arial" font-size="14" fill="#333333">혈류 상태</text>
+  <rect x="590" y="300" width="160" height="40" rx="5" fill="#f8f9fa" />
+  <polyline points="595,320 605,318 615,315 625,322 635,325 645,328 655,330 665,326 675,322 685,320 695,318 705,315 715,318 725,322 735,325 745,322" 
+    fill="none" stroke="#FB6340" stroke-width="1.5" />
+  
+  <!-- 배터리 및 연결 상태 -->
+  <rect x="590" y="360" width="160" height="70" rx="5" fill="#f8f9fa" />
+  <text x="610" y="385" font-family="Arial" font-size="14" fill="#333333">배터리: 85%</text>
+  <rect x="700" y="375" width="30" height="15" rx="2" fill="#2DCE89" />
+  <text x="610" y="410" font-family="Arial" font-size="14" fill="#333333">연결 상태: 양호</text>
+  <circle cx="715" cy="405" r="8" fill="#2DCE89" />
+</svg>
