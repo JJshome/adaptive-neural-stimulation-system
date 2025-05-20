@@ -1,0 +1,59 @@
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="800" height="500" fill="#f8f9fa" />
+  
+  <!-- 모바일 폰 프레임 -->
+  <rect x="250" y="50" width="300" height="400" rx="20" fill="#ffffff" stroke="#dddddd" stroke-width="2" />
+  
+  <!-- 상태 표시줄 -->
+  <rect x="250" y="50" width="300" height="30" rx="20" fill="#5E72E4" />
+  <rect x="250" y="50" width="300" height="30" rx="20" opacity="0.8" fill="#5E72E4" />
+  
+  <!-- 제목 및 유저 인사 -->
+  <text x="270" y="110" font-family="Arial" font-size="18" font-weight="bold" fill="#333333">안녕하세요, 김환자님</text>
+  <text x="270" y="130" font-family="Arial" font-size="14" fill="#666666">오늘의 회복 상태</text>
+  
+  <!-- 진행 상황 원형 그래프 -->
+  <circle cx="400" cy="190" r="60" fill="none" stroke="#dddddd" stroke-width="10" />
+  <path d="M 400 130 A 60 60 0 1 1 340 190" fill="none" stroke="#5E72E4" stroke-width="10" />
+  <text x="400" y="190" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" alignment-baseline="middle" fill="#333333">75%</text>
+  <text x="400" y="210" font-family="Arial" font-size="12" text-anchor="middle" alignment-baseline="middle" fill="#666666">일일 목표</text>
+  
+  <!-- 주요 지표 카드 -->
+  <rect x="270" y="260" width="260" height="80" rx="10" fill="#ffffff" stroke="#e6e6e6" stroke-width="1" />
+  
+  <!-- 지표 1: 통증 수준 -->
+  <circle cx="310" cy="300" r="20" fill="#F5365C" opacity="0.2" />
+  <text x="310" y="303" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" alignment-baseline="middle" fill="#F5365C">2/10</text>
+  <text x="350" y="290" font-family="Arial" font-size="14" fill="#333333">통증 수준</text>
+  <text x="350" y="310" font-family="Arial" font-size="12" fill="#666666">전일 대비 감소</text>
+  <line x1="410" y1="280" x2="410" y2="320" stroke="#e6e6e6" stroke-width="1" />
+  
+  <!-- 지표 2: 활동 점수 -->
+  <circle cx="450" cy="300" r="20" fill="#2DCE89" opacity="0.2" />
+  <text x="450" y="303" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" alignment-baseline="middle" fill="#2DCE89">82</text>
+  <text x="490" y="290" font-family="Arial" font-size="14" fill="#333333">활동 점수</text>
+  <text x="490" y="310" font-family="Arial" font-size="12" fill="#666666">목표 초과 달성</text>
+  
+  <!-- 다음 세션 정보 -->
+  <rect x="270" y="350" width="260" height="60" rx="10" fill="#f8f9fa" stroke="#e6e6e6" stroke-width="1" />
+  <text x="290" y="375" font-family="Arial" font-size="14" font-weight="bold" fill="#333333">다음 치료 세션</text>
+  <text x="290" y="395" font-family="Arial" font-size="12" fill="#666666">오늘 오후 3:00 - 운동신경 재활</text>
+  <rect x="480" y="365" width="30" height="30" rx="15" fill="#5E72E4" />
+  <text x="495" y="385" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle" alignment-baseline="middle" fill="#ffffff">→</text>
+  
+  <!-- 하단 네비게이션 바 -->
+  <rect x="250" y="420" width="300" height="30" rx="0 0 20 20" fill="#ffffff" stroke="#dddddd" stroke-width="1" />
+  
+  <!-- 네비게이션 아이콘들 -->
+  <circle cx="300" cy="435" r="10" fill="#5E72E4" />
+  <circle cx="350" cy="435" r="10" fill="#dddddd" />
+  <circle cx="400" cy="435" r="10" fill="#dddddd" />
+  <circle cx="450" cy="435" r="10" fill="#dddddd" />
+  <circle cx="500" cy="435" r="10" fill="#dddddd" />
+  
+  <!-- 제목 -->
+  <text x="400" y="30" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#333333">
+    환자용 홈 대시보드
+  </text>
+</svg>
