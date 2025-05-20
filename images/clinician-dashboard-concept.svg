@@ -1,0 +1,98 @@
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="800" height="500" fill="#f8f9fa" />
+  
+  <!-- 제목 -->
+  <text x="400" y="30" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#333333">
+    의료진용 대시보드
+  </text>
+  
+  <!-- 좌측 메뉴 패널 -->
+  <rect x="20" y="50" width="160" height="430" rx="5" fill="#2C3E50" />
+  
+  <!-- 메뉴 아이템 -->
+  <rect x="20" y="100" width="160" height="40" fill="#3498DB" />
+  <text x="50" y="125" font-family="Arial" font-size="14" fill="#ffffff">환자 대시보드</text>
+  
+  <text x="50" y="175" font-family="Arial" font-size="14" fill="#B3B3B3">치료 프로토콜</text>
+  <text x="50" y="215" font-family="Arial" font-size="14" fill="#B3B3B3">분석 및 보고서</text>
+  <text x="50" y="255" font-family="Arial" font-size="14" fill="#B3B3B3">팀 협업</text>
+  <text x="50" y="295" font-family="Arial" font-size="14" fill="#B3B3B3">설정</text>
+  
+  <!-- 사용자 정보 -->
+  <circle cx="60" cy="80" r="20" fill="#ECF0F1" />
+  <text x="90" y="85" font-family="Arial" font-size="14" fill="#ffffff">이의사 님</text>
+  
+  <!-- 메인 콘텐츠 영역 -->
+  <rect x="200" y="50" width="580" height="430" rx="5" fill="#ffffff" stroke="#E5E5E5" stroke-width="1" />
+  
+  <!-- 상단 필터 바 -->
+  <rect x="220" y="70" width="540" height="40" rx="5" fill="#F8F9FA" />
+  <text x="240" y="95" font-family="Arial" font-size="14" fill="#333333">환자 우선순위:</text>
+  
+  <!-- 필터 버튼 -->
+  <rect x="360" y="75" width="80" height="30" rx="15" fill="#3498DB" />
+  <text x="400" y="95" font-family="Arial" font-size="12" text-anchor="middle" fill="#ffffff">모든 환자</text>
+  
+  <rect x="450" y="75" width="80" height="30" rx="15" fill="#ffffff" stroke="#3498DB" stroke-width="1" />
+  <text x="490" y="95" font-family="Arial" font-size="12" text-anchor="middle" fill="#3498DB">주의 필요</text>
+  
+  <rect x="540" y="75" width="80" height="30" rx="15" fill="#ffffff" stroke="#3498DB" stroke-width="1" />
+  <text x="580" y="95" font-family="Arial" font-size="12" text-anchor="middle" fill="#3498DB">최근 변화</text>
+  
+  <!-- 환자 목록 그리드 -->
+  <!-- 환자 1 -->
+  <rect x="220" y="130" width="540" height="80" rx="5" fill="#ffffff" stroke="#E5E5E5" stroke-width="1" />
+  <circle cx="255" cy="170" r="25" fill="#3498DB" opacity="0.2" />
+  <text x="255" y="175" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" alignment-baseline="middle" fill="#3498DB">김환자</text>
+  
+  <text x="310" y="155" font-family="Arial" font-size="16" font-weight="bold" fill="#333333">김환자</text>
+  <text x="310" y="175" font-family="Arial" font-size="14" fill="#666666">41세 | 말초신경 손상 | 12일차</text>
+  <text x="310" y="195" font-family="Arial" font-size="14" fill="#666666">최근 활동: 오늘 10:30 AM</text>
+  
+  <!-- 환자 1 상태 표시 -->
+  <rect x="610" y="145" width="100" height="30" rx="15" fill="#2ECC71" opacity="0.2" />
+  <text x="660" y="165" font-family="Arial" font-size="12" text-anchor="middle" fill="#2ECC71">양호</text>
+  <rect x="610" y="180" width="100" height="5" rx="2.5" fill="#f8f9fa" />
+  <rect x="610" y="180" width="75" height="5" rx="2.5" fill="#2ECC71" />
+  
+  <!-- 환자 2 -->
+  <rect x="220" y="220" width="540" height="80" rx="5" fill="#ffffff" stroke="#E5E5E5" stroke-width="1" />
+  <circle cx="255" cy="260" r="25" fill="#E74C3C" opacity="0.2" />
+  <text x="255" y="265" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" alignment-baseline="middle" fill="#E74C3C">이환자</text>
+  
+  <text x="310" y="245" font-family="Arial" font-size="16" font-weight="bold" fill="#333333">이환자</text>
+  <text x="310" y="265" font-family="Arial" font-size="14" fill="#666666">58세 | 척수 손상 | 45일차</text>
+  <text x="310" y="285" font-family="Arial" font-size="14" fill="#666666">최근 활동: 어제 4:15 PM</text>
+  
+  <!-- 환자 2 상태 표시 -->
+  <rect x="610" y="235" width="100" height="30" rx="15" fill="#E74C3C" opacity="0.2" />
+  <text x="660" y="255" font-family="Arial" font-size="12" text-anchor="middle" fill="#E74C3C">주의 필요</text>
+  <rect x="610" y="270" width="100" height="5" rx="2.5" fill="#f8f9fa" />
+  <rect x="610" y="270" width="40" height="5" rx="2.5" fill="#E74C3C" />
+  
+  <!-- 환자 3 -->
+  <rect x="220" y="310" width="540" height="80" rx="5" fill="#ffffff" stroke="#E5E5E5" stroke-width="1" />
+  <circle cx="255" cy="350" r="25" fill="#F39C12" opacity="0.2" />
+  <text x="255" y="355" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" alignment-baseline="middle" fill="#F39C12">박환자</text>
+  
+  <text x="310" y="335" font-family="Arial" font-size="16" font-weight="bold" fill="#333333">박환자</text>
+  <text x="310" y="355" font-family="Arial" font-size="14" fill="#666666">62세 | 뇌졸중 | 30일차</text>
+  <text x="310" y="375" font-family="Arial" font-size="14" fill="#666666">최근 활동: 오늘 9:10 AM</text>
+  
+  <!-- 환자 3 상태 표시 -->
+  <rect x="610" y="325" width="100" height="30" rx="15" fill="#F39C12" opacity="0.2" />
+  <text x="660" y="345" font-family="Arial" font-size="12" text-anchor="middle" fill="#F39C12">관찰 중</text>
+  <rect x="610" y="360" width="100" height="5" rx="2.5" fill="#f8f9fa" />
+  <rect x="610" y="360" width="60" height="5" rx="2.5" fill="#F39C12" />
+  
+  <!-- 하단 페이지네이션 -->
+  <rect x="435" y="420" width="30" height="30" rx="15" fill="#3498DB" />
+  <text x="450" y="440" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" alignment-baseline="middle" fill="#ffffff">1</text>
+  
+  <rect x="475" y="420" width="30" height="30" rx="15" fill="#ffffff" stroke="#3498DB" stroke-width="1" />
+  <text x="490" y="440" font-family="Arial" font-size="14" text-anchor="middle" alignment-baseline="middle" fill="#3498DB">2</text>
+  
+  <rect x="515" y="420" width="30" height="30" rx="15" fill="#ffffff" stroke="#3498DB" stroke-width="1" />
+  <text x="530" y="440" font-family="Arial" font-size="14" text-anchor="middle" alignment-baseline="middle" fill="#3498DB">3</text>
+</svg>
