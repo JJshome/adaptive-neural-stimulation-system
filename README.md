@@ -123,18 +123,6 @@
 - **적응형 자극 제어**: 실시간 피드백에 기반한 자극 매개변수 조정
 - **데이터 시각화**: 신호, 스펙트럼, 최적화 과정 시각화
 
-### 신경 신호 처리 및 분석
-
-<p align="center">
-  <img src="docs/images/signal_processing.svg" alt="신경 신호 처리 및 분석" width="800">
-</p>
-
-### 강화학습 기반 자극 최적화
-
-<p align="center">
-  <img src="docs/images/reinforcement_learning.svg" alt="강화학습 기반 자극 최적화" width="800">
-</p>
-
 ## 시스템 구조
 
 프로젝트는 다음과 같은 모듈로 구성되어 있습니다:
