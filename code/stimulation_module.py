@@ -467,3 +467,247 @@ class StimulationModule:
         })
         
         return True
+    
+    def get_parameters(self, channel_id):
+        """
+        Get current stimulation parameters for a specific channel
+        
+        Parameters:
+        -----------
+        channel_id : int
+            Channel ID
+            
+        Returns:
+        --------
+        params : dict
+            Parameter values or None if invalid channel
+        """
+        if channel_id < 0 or channel_id >= self.n_channels:
+            self.logger.warning(f"Invalid channel ID: {channel_id}")
+            return None
+        
+        return self.channels[channel_id].get_parameters()
+    
+    def apply_regeneration_pattern(self, channel_id, pattern, customizations=None):
+        """
+        Apply a predefined neural regeneration pattern to a channel
+        
+        Parameters:
+        -----------
+        channel_id : int
+            Channel ID
+        pattern : NeuralRegenerationPattern
+            The predefined pattern to apply
+        customizations : dict or None
+            Optional parameter overrides for the pattern
+            
+        Returns:
+        --------
+        success : bool
+            Whether the pattern was applied successfully
+        """
+        if channel_id < 0 or channel_id >= self.n_channels:
+            self.logger.warning(f"Invalid channel ID: {channel_id}")
+            return False
+        
+        # Check if pattern exists
+        if pattern not in self.pattern_templates:
+            self.logger.warning(f"Pattern '{pattern}' not found")
+            return False
+        
+        # Get the pattern parameters
+        params = self.pattern_templates[pattern].copy()
+        
+        # Apply customizations if provided
+        if customizations:
+            for key, value in customizations.items():
+                if key in params:
+                    params[key] = value
+        
+        # Apply the parameters
+        success = self.set_parameters(channel_id, params)
+        
+        if success:
+            self.logger.info(f"Applied regeneration pattern '{pattern.name}' to channel {channel_id}")
+            
+            # Log pattern application
+            self._log_event("apply_pattern", {
+                "channel_id": channel_id,
+                "pattern": pattern.name,
+                "customizations": customizations
+            })
+        
+        return success
+    
+    def _validate_parameters(self, params):
+        """
+        Validate stimulation parameters for safety
+        
+        Parameters:
+        -----------
+        params : dict
+            Parameter values
+            
+        Returns:
+        --------
+        valid : bool
+            Whether the parameters are valid
+        """
+        for param, value in params.items():
+            if param in self.safety_limits:
+                min_val, max_val = self.safety_limits[param]
+                if value < min_val or value > max_val:
+                    self.logger.warning(f"Parameter {param} value {value} is outside safe range [{min_val}, {max_val}]")
+                    return False
+        
+        # Advanced validation (parameter combinations)
+        if 'amplitude' in params and 'pulse_width' in params:
+            # Charge density safety check
+            charge = params['amplitude'] * params['pulse_width'] * 1e-6  # mA * μs -> mC
+            if charge > 0.5:  # More than 0.5 mC per phase
+                self.logger.warning(f"Warning: High charge density ({charge:.2f} mC)")
+                # Could return False here for stricter safety
+        
+        return True
+    
+    def _apply_parameters_to_hardware(self, channel_id, params):
+        """
+        Apply parameters to the stimulation hardware
+        
+        Parameters:
+        -----------
+        channel_id : int
+            Channel ID
+        params : dict
+            Parameter values
+        """
+        # In practice, this would send commands to the actual hardware
+        # This is a placeholder for demonstration
+        try:
+            # Simulate hardware communication
+            time.sleep(0.1)
+            self.logger.info(f"Applied parameters to hardware: Channel {channel_id}, {params}")
+            return True
+        except Exception as e:
+            self.logger.error(f"Hardware communication error: {e}")
+            return False
+    
+    def start_stimulation(self, channel_id=None, duration=None):
+        """
+        Start stimulation on specified channels
+        
+        Parameters:
+        -----------
+        channel_id : int or list or None
+            Channel ID(s) to start stimulation on (None for all)
+        duration : float or None
+            Duration in seconds (None for indefinite)
+            
+        Returns:
+        --------
+        success : bool
+            Whether stimulation was started successfully
+        """
+        if channel_id is None:
+            # Start on all active channels
+            channels_to_start = range(self.n_channels)
+        elif isinstance(channel_id, (list, tuple)):
+            # Start on multiple specific channels
+            channels_to_start = channel_id
+        else:
+            # Start on a single channel
+            channels_to_start = [channel_id]
+        
+        # Validate channels
+        valid_channels = []
+        for ch_id in channels_to_start:
+            if ch_id < 0 or ch_id >= self.n_channels:
+                self.logger.warning(f"Invalid channel ID: {ch_id}")
+                continue
+            valid_channels.append(ch_id)
+        
+        if not valid_channels:
+            self.logger.warning("No valid channels to start stimulation")
+            return False
+        
+        # Start stimulation on each channel
+        for ch_id in valid_channels:
+            success = self.channels[ch_id].start_stimulation()
+            if not success:
+                self.logger.warning(f"Failed to start stimulation on channel {ch_id}")
+        
+        # Start the stimulation thread if not already running
+        if not self.running:
+            self.running = True
+            self.stimulation_thread = threading.Thread(target=self._stimulation_loop, args=(duration,))
+            self.stimulation_thread.daemon = True
+            self.stimulation_thread.start()
+            
+            # Start visualization if enabled
+            if self.visualization and not self.visualization_thread:
+                self._start_visualization()
+        
+        # Log event
+        self._log_event("start_stimulation", {
+            "channels": valid_channels,
+            "duration": duration
+        })
+        
+        return True
+    
+    def stop_stimulation(self, channel_id=None):
+        """
+        Stop stimulation on specified channels
+        
+        Parameters:
+        -----------
+        channel_id : int or list or None
+            Channel ID(s) to stop stimulation on (None for all)
+            
+        Returns:
+        --------
+        success : bool
+            Whether stimulation was stopped successfully
+        """
+        if channel_id is None:
+            # Stop on all channels
+            channels_to_stop = range(self.n_channels)
+        elif isinstance(channel_id, (list, tuple)):
+            # Stop on multiple specific channels
+            channels_to_stop = channel_id
+        else:
+            # Stop on a single channel
+            channels_to_stop = [channel_id]
+        
+        # Stop stimulation on each channel
+        for ch_id in channels_to_stop:
+            if ch_id < 0 or ch_id >= self.n_channels:
+                self.logger.warning(f"Invalid channel ID: {ch_id}")
+                continue
+            
+            self.channels[ch_id].stop_stimulation()
+        
+        # Check if any channels are still stimulating
+        any_stimulating = False
+        for channel in self.channels:
+            if channel.is_stimulating:
+                any_stimulating = True
+                break
+        
+        # Stop the stimulation thread if no channels are stimulating
+        if not any_stimulating:
+            self.running = False
+            if self.stimulation_thread:
+                self.stimulation_thread.join(timeout=1.0)
+            
+            # Stop visualization
+            if self.visualization and self.visualization_thread:
+                plt.close(self.fig)
+                self.visualization_thread = None
+        
+        # Log event
+        self._log_event("stop_stimulation", {
+            "channels": list(channels_to_stop)
+        })
+        
+        return True
