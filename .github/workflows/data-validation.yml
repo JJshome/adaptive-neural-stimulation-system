@@ -94,7 +94,7 @@ jobs:
             sys.exit(1)
         else:
             print('\nAll data files validated successfully!')
-        ENDOFPYTHON
+ENDOFPYTHON
         
     - name: Generate sample plots
       run: |
@@ -176,7 +176,7 @@ jobs:
         print(f'\nPlotting complete: {success_count} successful, {error_count} failed')
         if error_count > 0 and success_count == 0:
             sys.exit(1)  # 모든 플롯 생성이 실패한 경우에만 실패로 처리
-        ENDOFPYTHON
+ENDOFPYTHON
         
     - name: Upload plots as artifacts
       uses: actions/upload-artifact@v3
