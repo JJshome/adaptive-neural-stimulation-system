@@ -1,123 +1,147 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
-  <!-- 배경 사각형 -->
-  <rect width="800" height="500" fill="#f8f9fa" rx="10" ry="10" />
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="600" viewBox="0 0 800 600">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&amp;display=swap');
+    
+    .title {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 24px;
+      font-weight: bold;
+      text-anchor: middle;
+    }
+    
+    .subtitle {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      text-anchor: middle;
+    }
+    
+    .mechanism {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    
+    .description {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 12px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    
+    .arrow {
+      fill: none;
+      stroke: #333;
+      stroke-width: 2;
+      marker-end: url(#arrowhead);
+    }
+    
+    .dashed {
+      stroke-dasharray: 5, 5;
+    }
+    
+    .neurotrophic {
+      fill: #d1e7dd;
+    }
+    
+    .signaling {
+      fill: #cff4fc;
+    }
+    
+    .cellular {
+      fill: #fff3cd;
+    }
+    
+    .vascular {
+      fill: #f8d7da;
+    }
+    
+    .inflammation {
+      fill: #e2daf5;
+    }
+    
+    .axonal {
+      fill: #e2f1ff;
+    }
+  </style>
   
-  <!-- 제목 -->
-  <text x="400" y="40" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#343a40">전기자극 기반 신경 재생 메커니즘</text>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+  </defs>
   
-  <!-- 신경 세포 영역 -->
-  <g transform="translate(50, 100)">
-    <!-- 신경세포 영역 배경 -->
-    <rect x="0" y="0" width="700" height="250" rx="10" ry="10" fill="#e8f5e9" stroke="#81c784" stroke-width="2" />
-    
-    <!-- 손상된 신경 세포 -->
-    <g transform="translate(50, 120)">
-      <!-- 세포체 -->
-      <ellipse cx="0" cy="0" rx="30" ry="20" fill="#f8bbd0" stroke="#ec407a" stroke-width="2" />
-      
-      <!-- 손상된 축삭 -->
-      <path d="M30,0 L100,0" stroke="#ec407a" stroke-width="3" stroke-dasharray="5,5" />
-      <text x="65" y="-10" font-family="Arial" font-size="12" font-style="italic" text-anchor="middle" fill="#d32f2f">손상된 축삭</text>
-      
-      <!-- 텍스트 -->
-      <text x="0" y="0" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#343a40">신경세포</text>
-    </g>
-    
-    <!-- 전기자극 아이콘 -->
-    <g transform="translate(150, 80)">
-      <circle cx="0" cy="0" r="20" fill="#ffe0b2" stroke="#ff9800" stroke-width="2" />
-      <path d="M-5,-10 L0,-3 L5,-10 M0,-3 L0,10" stroke="#ff9800" stroke-width="2" />
-      <text x="0" y="-30" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#e65100">전기자극</text>
-    </g>
-    
-    <!-- 재생 중인 축삭 -->
-    <g transform="translate(200, 120)">
-      <path d="M-50,0 C0,0 50,20 100,0 C150,-20 200,0 250,0" stroke="#66bb6a" stroke-width="3" />
-      <text x="100" y="-10" font-family="Arial" font-size="12" font-style="italic" text-anchor="middle" fill="#2e7d32">재생 중인 축삭</text>
-    </g>
-    
-    <!-- 슈반 세포 -->
-    <g transform="translate(350, 100)">
-      <ellipse cx="0" cy="0" rx="20" ry="15" fill="#bbdefb" stroke="#1976d2" stroke-width="2" />
-      <text x="0" y="0" font-family="Arial" font-size="10" text-anchor="middle" fill="#343a40">슈반세포</text>
-      <text x="0" y="-25" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#0d47a1">활성화</text>
-    </g>
-    
-    <!-- 대식세포 -->
-    <g transform="translate(500, 140)">
-      <circle cx="0" cy="0" r="20" fill="#d1c4e9" stroke="#673ab7" stroke-width="2" />
-      <text x="0" y="0" font-family="Arial" font-size="10" text-anchor="middle" fill="#343a40">대식세포</text>
-      <text x="0" y="-30" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#4527a0">M2 극성화</text>
-    </g>
-    
-    <!-- 혈관 -->
-    <g transform="translate(580, 80)">
-      <path d="M0,0 C20,10 40,-10 60,0 C80,10 100,-10 120,0" fill="none" stroke="#ef5350" stroke-width="3" />
-      <text x="60" y="-15" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#c62828">혈류 개선</text>
-    </g>
-    
-    <!-- 화살표와 텍스트 -->
-    <g transform="translate(580, 180)">
-      <path d="M-20,-20 L20,20" stroke="#0091ea" stroke-width="2" marker-end="url(#arrowhead)" />
-      <text x="50" y="30" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#0091ea">신경 재생</text>
-    </g>
-    
-    <!-- 화살표 마커 정의 -->
-    <defs>
-      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-        <polygon points="0 0, 10 3.5, 0 7" fill="#0091ea" />
-      </marker>
-    </defs>
-  </g>
+  <!-- Title -->
+  <text x="400" y="40" class="title">전기자극을 통한 신경재생 메커니즘</text>
+  <text x="400" y="65" class="subtitle">다양한 분자적, 세포적 경로를 통한 축삭 성장 및 기능 회복 촉진</text>
   
-  <!-- 분자적 메커니즘 영역 -->
-  <g transform="translate(50, 370)">
-    <!-- 메커니즘 영역 배경 -->
-    <rect x="0" y="0" width="700" height="100" rx="10" ry="10" fill="#e3f2fd" stroke="#64b5f6" stroke-width="2" />
-    
-    <!-- 메커니즘 제목 -->
-    <text x="350" y="25" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#0d47a1">분자적 메커니즘</text>
-    
-    <!-- 분자 메커니즘 아이콘들 -->
-    <g transform="translate(350, 60)">
-      <!-- BDNF/GDNF -->
-      <g transform="translate(-280, 0)">
-        <circle cx="0" cy="0" r="20" fill="#c8e6c9" stroke="#43a047" stroke-width="2" />
-        <text x="0" y="0" font-family="Arial" font-size="10" font-weight="bold" text-anchor="middle" fill="#1b5e20">BDNF</text>
-        <text x="0" y="15" font-family="Arial" font-size="10" font-weight="bold" text-anchor="middle" fill="#1b5e20">GDNF</text>
-        <text x="0" y="-25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#1b5e20">↑</text>
-      </g>
-      
-      <!-- cAMP -->
-      <g transform="translate(-140, 0)">
-        <circle cx="0" cy="0" r="20" fill="#ffecb3" stroke="#ffa000" stroke-width="2" />
-        <text x="0" y="0" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#ff6f00">cAMP</text>
-        <text x="0" y="-25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#ff6f00">↑</text>
-      </g>
-      
-      <!-- 유전자 발현 -->
-      <g transform="translate(0, 0)">
-        <rect x="-30" y="-15" width="60" height="30" rx="5" ry="5" fill="#e1bee7" stroke="#8e24aa" stroke-width="2" />
-        <text x="0" y="0" font-family="Arial" font-size="10" font-weight="bold" text-anchor="middle" fill="#4a148c">RAGs</text>
-        <text x="0" y="12" font-family="Arial" font-size="8" text-anchor="middle" fill="#4a148c">유전자 발현</text>
-        <text x="0" y="-25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#4a148c">↑</text>
-      </g>
-      
-      <!-- 염증 마커 -->
-      <g transform="translate(140, 0)">
-        <circle cx="0" cy="0" r="20" fill="#ffcdd2" stroke="#e53935" stroke-width="2" />
-        <text x="0" y="0" font-family="Arial" font-size="10" font-weight="bold" text-anchor="middle" fill="#b71c1c">염증</text>
-        <text x="0" y="12" font-family="Arial" font-size="8" text-anchor="middle" fill="#b71c1c">마커</text>
-        <text x="0" y="-25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#b71c1c">↓</text>
-      </g>
-      
-      <!-- 세포 신호 전달 -->
-      <g transform="translate(280, 0)">
-        <path d="M-20,-10 L0,-10 L0,0 L20,0 L20,10 L-20,10 Z" fill="#b3e5fc" stroke="#0288d1" stroke-width="2" />
-        <text x="0" y="5" font-family="Arial" font-size="8" font-weight="bold" text-anchor="middle" fill="#01579b">신호전달</text>
-        <text x="0" y="-25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#01579b">↑</text>
-      </g>
-    </g>
-  </g>
+  <!-- Central Electrical Stimulation Module -->
+  <circle cx="400" cy="180" r="70" fill="#f8f9fa" stroke="#333" stroke-width="2" />
+  <text x="400" y="165" class="mechanism">전기자극</text>
+  <text x="400" y="190" class="description">다양한 파형 및 주파수</text>
+  <text x="400" y="210" class="description">(단상/이상/삼상/버스트)</text>
+  
+  <!-- Mechanisms -->
+  <!-- 1. Neurotrophic Factors -->
+  <rect x="120" y="300" width="180" height="100" rx="10" class="neurotrophic" />
+  <text x="210" y="330" class="mechanism">신경영양인자</text>
+  <text x="210" y="350" class="description">BDNF, GDNF, NGF 상향 조절</text>
+  <text x="210" y="370" class="description">생존 및 성장 촉진</text>
+  
+  <!-- 2. Signaling Pathway -->
+  <rect x="360" y="300" width="180" height="100" rx="10" class="signaling" />
+  <text x="450" y="330" class="mechanism">신호전달 경로</text>
+  <text x="450" y="350" class="description">cAMP/PKA/CREB 경로 활성화</text>
+  <text x="450" y="370" class="description">재생 관련 유전자(RAGs) 발현</text>
+  
+  <!-- 3. Cellular Activity -->
+  <rect x="600" y="300" width="180" height="100" rx="10" class="cellular" />
+  <text x="690" y="330" class="mechanism">슈반세포 활성화</text>
+  <text x="690" y="350" class="description">증식, 이동, 정렬 촉진</text>
+  <text x="690" y="370" class="description">수초화 과정 가속화</text>
+  
+  <!-- 4. Vascular Effects -->
+  <rect x="120" y="450" width="180" height="100" rx="10" class="vascular" />
+  <text x="210" y="480" class="mechanism">혈류 개선</text>
+  <text x="210" y="500" class="description">미세혈관 확장</text>
+  <text x="210" y="520" class="description">영양 공급 증가</text>
+  
+  <!-- 5. Inflammation Modulation -->
+  <rect x="360" y="450" width="180" height="100" rx="10" class="inflammation" />
+  <text x="450" y="480" class="mechanism">염증 조절</text>
+  <text x="450" y="500" class="description">대식세포 M2 극성화</text>
+  <text x="450" y="520" class="description">항염증성 사이토카인 증가</text>
+  
+  <!-- 6. Axonal Growth -->
+  <rect x="600" y="450" width="180" height="100" rx="10" class="axonal" />
+  <text x="690" y="480" class="mechanism">축삭 성장 촉진</text>
+  <text x="690" y="500" class="description">성장원뿔 활성화</text>
+  <text x="690" y="520" class="description">세포골격 재구성</text>
+  
+  <!-- Arrows from Electrical Stimulation to Mechanisms -->
+  <path d="M 350 215 L 210 300" class="arrow" />
+  <path d="M 400 250 L 400 300" class="arrow" />
+  <path d="M 450 215 L 590 300" class="arrow" />
+  <path d="M 330 220 L 170 450" class="arrow" />
+  <path d="M 400 250 C 350 280 350 400 360 450" class="arrow" />
+  <path d="M 470 220 L 630 450" class="arrow" />
+  
+  <!-- Interconnection Arrows -->
+  <path d="M 210 400 L 210 450" class="arrow" />
+  <path d="M 300 350 L 360 350" class="arrow" />
+  <path d="M 540 350 L 600 350" class="arrow" />
+  <path d="M 300 500 L 360 500" class="arrow" />
+  <path d="M 540 500 L 600 500" class="arrow" />
+  <path d="M 690 400 L 690 450" class="arrow" />
+  
+  <!-- Diagonal Connections -->
+  <path d="M 250 400 L 390 450" class="arrow dashed" />
+  <path d="M 530 400 L 670 450" class="arrow dashed" />
+  <path d="M 250 550 C 370 570 490 570 610 550" class="arrow dashed" />
+  
+  <!-- Result Text -->
+  <rect x="300" y="570" width="200" height="30" rx="15" fill="#28a745" />
+  <text x="400" y="590" class="description" fill="white" font-weight="bold">신경 기능 회복 및 재생 극대화</text>
 </svg>
