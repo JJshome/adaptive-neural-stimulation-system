@@ -26,21 +26,37 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pytest pytest-cov
-        # 테스트할 최소한의 패키지 설치 (tensorflow 제외)
-        pip install numpy scipy matplotlib pandas
-        # 프로젝트 종속성 설치
-        if [ -f requirements.txt ]; then 
-          # tensorflow만 제외하고 설치 (CI 환경에서 TensorFlow 설치는 무거울 수 있음)
-          pip install $(grep -v "tensorflow" requirements.txt) || pip install -r requirements.txt
+        
+        # 기본 패키지 설치 (TensorFlow 관련 문제 해결)
+        pip install numpy==1.22.4 scipy==1.7.3 matplotlib==3.5.2 pandas==1.4.2
+        pip install scikit-learn==1.0.2 h5py==3.6.0
+        
+        # Python 3.8에 적합한 TensorFlow 버전 설치
+        if [ "${{ matrix.python-version }}" = "3.8" ]; then
+          pip install "tensorflow==2.8.0"
+        elif [ "${{ matrix.python-version }}" = "3.9" ]; then
+          pip install "tensorflow==2.9.0"
+        else
+          pip install "tensorflow==2.10.0"
         fi
+        
         # 설치된 패키지 목록 출력 (디버깅용)
         pip list
+    
+    - name: Setup test environment
+      run: |
+        # 환경 변수 설정
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
+        export TF_CPP_MIN_LOG_LEVEL=2  # TensorFlow 경고 메시지 억제
+        
+        # 테스트 데이터 디렉토리가 존재하는지 확인
+        mkdir -p data
     
     - name: Test with pytest
       run: |
         # -v 플래그로 테스트 실행 과정 자세히 출력
         # --no-header --no-summary 옵션 제거로 더 자세한 정보 출력
-        pytest tests/ --cov=./ --cov-report=xml -v
+        python -m pytest tests/ --cov=./ --cov-report=xml -v
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
