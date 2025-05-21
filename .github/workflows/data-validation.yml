@@ -47,7 +47,7 @@ jobs:
           exit 0  # 파일이 없어도 실패로 처리하지 않음
         fi
         
-        python -c "
+        python - <<EOF
 import os
 import pandas as pd
 import numpy as np
@@ -68,7 +68,7 @@ for csv_file in csv_files:
         
         # 기본 검증: 열 존재 확인
         if 'time' not in df.columns:
-            errors.append(f'{csv_file}: Missing required \"time\" column')
+            errors.append(f'{csv_file}: Missing required "time" column')
         
         # 시간 열 검증: 단조 증가하는지 확인
         if 'time' in df.columns and not all(df['time'].diff().dropna() > 0):
@@ -88,13 +88,13 @@ for csv_file in csv_files:
 
 # 오류 보고 및 종료
 if errors:
-    print('\\nValidation errors found:')
+    print('\nValidation errors found:')
     for error in errors:
         print(f'- {error}')
     sys.exit(1)
 else:
-    print('\\nAll data files validated successfully!')
-        "
+    print('\nAll data files validated successfully!')
+EOF
         
     - name: Generate sample plots
       run: |
@@ -109,7 +109,7 @@ else:
         # plots 디렉토리 생성
         mkdir -p data/plots
         
-        python -c "
+        python - <<EOF
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -173,10 +173,10 @@ for csv_file in csv_files:
         print(f'Error generating plot for {csv_file}: {str(e)}')
         error_count += 1
 
-print(f'\\nPlotting complete: {success_count} successful, {error_count} failed')
+print(f'\nPlotting complete: {success_count} successful, {error_count} failed')
 if error_count > 0 and success_count == 0:
     sys.exit(1)  # 모든 플롯 생성이 실패한 경우에만 실패로 처리
-        "
+EOF
         
     - name: Upload plots as artifacts
       uses: actions/upload-artifact@v3
