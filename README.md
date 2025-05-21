@@ -181,22 +181,3 @@ response = simulate_stimulation_response(params, nerve_state='damaged')
 1. **메커니즘 연구**: 분자적 신호 경로 통합, 세포 유형 특이적 반응, 후성유전학적 영향 규명
 2. **기술적 발전**: 폐루프 시스템 최적화, 타겟팅 정확도 향상, 비침습적 딥 스티뮬레이션 기술 개발
 3. **임상 응용 확장**: 중추-말초 복합 손상, 유전성 신경병증, 신경퇴행성 질환에서의 적용 가능성 연구
-
-## 논문 및 참고자료
-
-- Yao L, et al. (2018). "Electrical stimulation for peripheral nerve regeneration: Current developments and challenges."
-- Huang J, et al. (2021). "Machine learning applications in neural engineering and neuroscience."
-- Gordon T, et al. (2020). "Brief electrical stimulation promotes the speed and accuracy of motor axonal regeneration."
-- Brushart TM, et al. (2019). "Electrical stimulation promotes motoneuron regeneration without increasing its speed or conditioning the neuron."
-
-## 기여 방법
-
-본 프로젝트에 기여하고 싶으신 분들은 [CONTRIBUTING.md](CONTRIBUTING.md) 문서를 참고해주세요. 모든 의견과 제안을 환영합니다.
-
-## 라이센스
-
-이 프로젝트는 MIT 라이센스를 따릅니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.
-
-## 연락처
-
-프로젝트에 관한 문의나 제안은 GitHub 이슈를 통해 남겨주시기 바랍니다.
