@@ -5,7 +5,7 @@ matplotlib==3.5.2
 pandas==1.4.2
 
 # 머신러닝/딥러닝 라이브러리
-tensorflow>=2.8.0, <2.11.0  # Python 3.8, 3.9, 3.10과 호환되는 버전
+tensorflow==2.10.0  # CPU 버전, Python 3.8-3.10과 호환되는 버전
 scikit-learn==1.0.2
 
 # 데이터 저장 및 처리
