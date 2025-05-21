@@ -47,54 +47,54 @@ jobs:
           exit 0  # 파일이 없어도 실패로 처리하지 않음
         fi
         
-        python - <<EOF
-import os
-import pandas as pd
-import numpy as np
-import glob
-import sys
+        python - << 'ENDOFPYTHON'
+        import os
+        import pandas as pd
+        import numpy as np
+        import glob
+        import sys
 
-# 검증 중 발견된 오류 기록
-errors = []
+        # 검증 중 발견된 오류 기록
+        errors = []
 
-# CSV 파일 검증
-csv_files = glob.glob('data/samples/*.csv')
-print(f'Found {len(csv_files)} CSV files to validate')
+        # CSV 파일 검증
+        csv_files = glob.glob('data/samples/*.csv')
+        print(f'Found {len(csv_files)} CSV files to validate')
 
-for csv_file in csv_files:
-    try:
-        print(f'Validating {csv_file}...')
-        df = pd.read_csv(csv_file)
-        
-        # 기본 검증: 열 존재 확인
-        if 'time' not in df.columns:
-            errors.append(f'{csv_file}: Missing required "time" column')
-        
-        # 시간 열 검증: 단조 증가하는지 확인
-        if 'time' in df.columns and not all(df['time'].diff().dropna() > 0):
-            errors.append(f'{csv_file}: Time column is not monotonically increasing')
-        
-        # 신호 값 검증: 너무 큰 값이나 NaN 확인
-        for col in df.columns:
-            if col != 'time':
-                if df[col].isna().any():
-                    errors.append(f'{csv_file}: Column {col} contains NaN values')
-                if abs(df[col]).max() > 10.0:  # 합리적인 신호 범위 (임의 설정)
-                    errors.append(f'{csv_file}: Column {col} contains unusually large values')
-        
-        print(f'Successfully validated {csv_file}')
-    except Exception as e:
-        errors.append(f'Error validating {csv_file}: {str(e)}')
+        for csv_file in csv_files:
+            try:
+                print(f'Validating {csv_file}...')
+                df = pd.read_csv(csv_file)
+                
+                # 기본 검증: 열 존재 확인
+                if 'time' not in df.columns:
+                    errors.append(f'{csv_file}: Missing required "time" column')
+                
+                # 시간 열 검증: 단조 증가하는지 확인
+                if 'time' in df.columns and not all(df['time'].diff().dropna() > 0):
+                    errors.append(f'{csv_file}: Time column is not monotonically increasing')
+                
+                # 신호 값 검증: 너무 큰 값이나 NaN 확인
+                for col in df.columns:
+                    if col != 'time':
+                        if df[col].isna().any():
+                            errors.append(f'{csv_file}: Column {col} contains NaN values')
+                        if abs(df[col]).max() > 10.0:  # 합리적인 신호 범위 (임의 설정)
+                            errors.append(f'{csv_file}: Column {col} contains unusually large values')
+                
+                print(f'Successfully validated {csv_file}')
+            except Exception as e:
+                errors.append(f'Error validating {csv_file}: {str(e)}')
 
-# 오류 보고 및 종료
-if errors:
-    print('\nValidation errors found:')
-    for error in errors:
-        print(f'- {error}')
-    sys.exit(1)
-else:
-    print('\nAll data files validated successfully!')
-EOF
+        # 오류 보고 및 종료
+        if errors:
+            print('\nValidation errors found:')
+            for error in errors:
+                print(f'- {error}')
+            sys.exit(1)
+        else:
+            print('\nAll data files validated successfully!')
+        ENDOFPYTHON
         
     - name: Generate sample plots
       run: |
@@ -109,74 +109,74 @@ EOF
         # plots 디렉토리 생성
         mkdir -p data/plots
         
-        python - <<EOF
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
-import glob
-import sys
+        python - << 'ENDOFPYTHON'
+        import os
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        import glob
+        import sys
 
-# 각 CSV 파일에 대한 플롯 생성
-csv_files = glob.glob('data/samples/*.csv')
-print(f'Found {len(csv_files)} CSV files to plot')
+        # 각 CSV 파일에 대한 플롯 생성
+        csv_files = glob.glob('data/samples/*.csv')
+        print(f'Found {len(csv_files)} CSV files to plot')
 
-success_count = 0
-error_count = 0
+        success_count = 0
+        error_count = 0
 
-for csv_file in csv_files:
-    try:
-        base_name = os.path.basename(csv_file).replace('.csv', '')
-        print(f'Plotting {base_name}...')
-        
-        # CSV 파일 로드
-        df = pd.read_csv(csv_file)
-        
-        if 'time' not in df.columns:
-            print(f'WARNING: {csv_file} has no time column, skipping')
-            continue
-            
-        # 플롯 생성
-        plt.figure(figsize=(10, 6))
-        
-        # 다채널 신호인 경우
-        if 'channel_1' in df.columns:
-            for col in df.columns:
-                if col != 'time' and col.startswith('channel_'):
-                    plt.plot(df['time'], df[col], label=col)
-            plt.legend()
-        # 단일 채널 신호인 경우
-        elif 'signal' in df.columns:
-            plt.plot(df['time'], df['signal'])
-        # 기타 경우
-        else:
-            # time 열을 제외한 모든 열을 플롯
-            for col in df.columns:
-                if col != 'time':
-                    plt.plot(df['time'], df[col], label=col)
-            if len(df.columns) > 2:
-                plt.legend()
-        
-        plt.title(f'{base_name}')
-        plt.xlabel('Time (s)')
-        plt.ylabel('Amplitude')
-        plt.grid(True)
-        
-        # 플롯 저장
-        plot_path = f'data/plots/{base_name}.png'
-        plt.savefig(plot_path, dpi=100, bbox_inches='tight')
-        plt.close()
-        
-        print(f'Generated plot for {base_name} at {plot_path}')
-        success_count += 1
-        
-    except Exception as e:
-        print(f'Error generating plot for {csv_file}: {str(e)}')
-        error_count += 1
+        for csv_file in csv_files:
+            try:
+                base_name = os.path.basename(csv_file).replace('.csv', '')
+                print(f'Plotting {base_name}...')
+                
+                # CSV 파일 로드
+                df = pd.read_csv(csv_file)
+                
+                if 'time' not in df.columns:
+                    print(f'WARNING: {csv_file} has no time column, skipping')
+                    continue
+                    
+                # 플롯 생성
+                plt.figure(figsize=(10, 6))
+                
+                # 다채널 신호인 경우
+                if 'channel_1' in df.columns:
+                    for col in df.columns:
+                        if col != 'time' and col.startswith('channel_'):
+                            plt.plot(df['time'], df[col], label=col)
+                    plt.legend()
+                # 단일 채널 신호인 경우
+                elif 'signal' in df.columns:
+                    plt.plot(df['time'], df['signal'])
+                # 기타 경우
+                else:
+                    # time 열을 제외한 모든 열을 플롯
+                    for col in df.columns:
+                        if col != 'time':
+                            plt.plot(df['time'], df[col], label=col)
+                    if len(df.columns) > 2:
+                        plt.legend()
+                
+                plt.title(f'{base_name}')
+                plt.xlabel('Time (s)')
+                plt.ylabel('Amplitude')
+                plt.grid(True)
+                
+                # 플롯 저장
+                plot_path = f'data/plots/{base_name}.png'
+                plt.savefig(plot_path, dpi=100, bbox_inches='tight')
+                plt.close()
+                
+                print(f'Generated plot for {base_name} at {plot_path}')
+                success_count += 1
+                
+            except Exception as e:
+                print(f'Error generating plot for {csv_file}: {str(e)}')
+                error_count += 1
 
-print(f'\nPlotting complete: {success_count} successful, {error_count} failed')
-if error_count > 0 and success_count == 0:
-    sys.exit(1)  # 모든 플롯 생성이 실패한 경우에만 실패로 처리
-EOF
+        print(f'\nPlotting complete: {success_count} successful, {error_count} failed')
+        if error_count > 0 and success_count == 0:
+            sys.exit(1)  # 모든 플롯 생성이 실패한 경우에만 실패로 처리
+        ENDOFPYTHON
         
     - name: Upload plots as artifacts
       uses: actions/upload-artifact@v3
