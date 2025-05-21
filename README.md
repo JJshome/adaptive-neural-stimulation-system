@@ -267,30 +267,6 @@ system.visualize_results({
 - 다양한 신경 손상 유형에 대한 최적 자극 패턴 발견
 - 신경 재생 메커니즘에 대한 깊은 이해 촉진
 
-## 참고 문헌
-
-### 전기자극 기반 신경재생 연구
-1. Zhang, X., & Ji, L. (2022). Electrical stimulation for neural regeneration: A comprehensive review. *Neural Regeneration Research*, 17(12), 2587-2597.
-2. Gordon, T., & English, A. W. (2016). Strategies to promote peripheral nerve regeneration: electrical stimulation and/or exercise. *European Journal of Neuroscience*, 43(3), 336-350.
-3. Yao, L., et al. (2018). Electrical stimulation optimizes the polarization of cortical neurons and enhances motor function recovery after spinal cord injury. *Neural Regeneration Research*, 13(12), 2112-2119.
-
-### 신경 신호 처리 및 분석
-4. Quiroga, R. Q., & Panzeri, S. (2013). Extracting information from neuronal populations: information theory and decoding approaches. *Nature Reviews Neuroscience*, 14(8), 584-600.
-5. Lewicki, M. S. (1998). A review of methods for spike sorting: the detection and classification of neural action potentials. *Network: Computation in Neural Systems*, 9(4), R53-R78.
-6. Rey, H. G., et al. (2015). Past, present and future of spike sorting techniques. *Brain Research Bulletin*, 119, 106-117.
-
-### 강화학습 및 LSTM 모델
-7. Barto, A. G., & Sutton, R. S. (2018). *Reinforcement learning: An introduction*. MIT press.
-8. Mnih, V., et al. (2015). Human-level control through deep reinforcement learning. *Nature*, 518(7540), 529-533.
-9. Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. *Neural computation*, 9(8), 1735-1780.
-10. Chen, L., et al. (2020). Deep learning based online predictions of neural responses to electrical stimulation for data-driven neuromodulation. *Scientific Reports*, 10(1), 1-10.
-
-### 임상 응용 연구
-11. Irimia, D., et al. (2019). The neurorestorative effect of electrical stimulation along the corticospinal tract for spinal cord injury. *Physiological Measurement*, 40(7), 074004.
-12. Ohtake, Y., et al. (2015). The effect of electrical stimulation and mechanistic target of rapamycin complex 1 (mTORC1) inhibition on corticospinal axons after spinal cord injury. *Experimental Neurology*, 269, 1-12.
-13. Tashiro, S., & Shinozaki, M. (2021). Functional electrical stimulation for motor recovery of spinal cord injury: review of experimental and clinical studies. *International Journal of Molecular Sciences*, 22(16), 8398.
-14. Lu, P., et al. (2016). Long-distance axonal growth from human induced pluripotent stem cells after spinal cord injury. *Neuron*, 92(1), 114-125.
-
 ## 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
