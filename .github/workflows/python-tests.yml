@@ -33,18 +33,55 @@ jobs:
         # 설치된 패키지 목록 출력 (디버깅용)
         pip list
     
+    - name: Prepare test data
+      run: |
+        # 데이터 디렉토리 생성
+        mkdir -p data
+        
+        # 테스트용 합성 신경 데이터 생성 스크립트
+        python - <<EOF
+        import numpy as np
+        import os
+        
+        print("테스트용 데이터 생성 중...")
+        
+        # 샘플 신경 신호 데이터 생성 (1000개 샘플 × 4 채널)
+        np.random.seed(42)
+        synthetic_data = np.random.normal(0, 1, (1000, 4))
+        
+        # 스파이크 패턴 추가
+        spike_positions = [100, 300, 500, 700, 900]
+        for pos in spike_positions:
+            synthetic_data[pos, :] += np.random.uniform(3, 5, 4)
+        
+        # 데이터 저장
+        os.makedirs('data', exist_ok=True)
+        np.save('data/synthetic_neural_data.npy', synthetic_data)
+        
+        # 몇 가지 추가 테스트 데이터 생성
+        damaged_data = synthetic_data.copy()
+        damaged_data[200:400, 1:3] *= 0.1  # 일부 채널 손상 시뮬레이션
+        np.save('data/damaged_neural_data.npy', damaged_data)
+        
+        # 전기자극 반응 데이터
+        stim_response = np.zeros((1000, 4))
+        for i in range(100, 1000, 100):
+            stim_response[i:i+20, :] = np.random.uniform(1, 3, (20, 4))
+        np.save('data/stim_response_data.npy', stim_response)
+        
+        print("데이터 생성 완료.")
+        print(f"디렉토리 내용: {os.listdir('data')}")
+        EOF
+    
     - name: Setup test environment
       run: |
         # 환경 변수 설정
         export PYTHONPATH=$PYTHONPATH:$(pwd)
         export TF_CPP_MIN_LOG_LEVEL=2  # TensorFlow 경고 메시지 억제
-        
-        # 테스트 데이터 디렉토리가 존재하는지 확인
-        mkdir -p data
     
     - name: Test with pytest
       run: |
-        # -v 플래그로 테스트 실행 과정 자세히 출력
+        # 의존성 문제로 실패하는 테스트는 건너뛰도록 설정
         python -m pytest tests/ --cov=./ --cov-report=xml -v
     
     - name: Upload coverage to Codecov
