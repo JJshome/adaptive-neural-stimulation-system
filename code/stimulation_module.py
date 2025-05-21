@@ -244,470 +244,639 @@ class StimulationModule:
         else:
             print("No hardware connected, using simulation mode")
     
-    def setup_logging(self):
-        """Set up logging configuration"""
-        self.log_path = "logs/stimulation"
-        os.makedirs(self.log_path, exist_ok=True)
+    def _stimulation_loop(self, duration=None):
+        """
+        Main stimulation loop
         
-        # File for structured logs
-        self.log_file = os.path.join(self.log_path, f"stim_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
-        self.log_data = []
+        Parameters:
+        -----------
+        duration : float or None
+            Stimulation duration in seconds (None for indefinite)
+        """
+        start_time = time.time()
+        end_time = start_time + duration if duration is not None else None
         
-        # Setup logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler(os.path.join(self.log_path, f"stim_system_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")),
-                logging.StreamHandler()
-            ]
-        )
-        self.logger = logging.getLogger('stimulation_module')
+        self.logger.info(f"Stimulation started" + (f" for {duration} seconds" if duration else ""))
+        
+        try:
+            while self.running:
+                # Check duration limit
+                if end_time and time.time() >= end_time:
+                    self.logger.info("Stimulation duration reached, stopping")
+                    self.stop_stimulation()
+                    break
+                
+                # Generate stimulation waveform for each active channel
+                for channel in self.channels:
+                    if not channel.is_stimulating:
+                        continue
+                    
+                    # Generate and apply waveform
+                    waveform, waveform_time = self._generate_waveform(channel)
+                    
+                    # Store for visualization
+                    channel.current_waveform = waveform
+                    channel.waveform_time = waveform_time
+                
+                # Sleep a short time to avoid CPU overload
+                time.sleep(0.01)
+        
+        except Exception as e:
+            self.logger.error(f"Error in stimulation loop: {e}")
+            self.running = False
+            
+            # Emergency stop in case of error
+            if self.hardware_connected:
+                self._emergency_stop()
+        
+        self.logger.info("Stimulation loop ended")
     
-    def _initialize_regeneration_patterns(self):
-        """Initialize predefined neural regeneration stimulation patterns based on research"""
-        patterns = {
-            # Early stage post-injury: neuroprotection
-            NeuralRegenerationPattern.EARLY_STAGE: {
-                'frequency': 20,          # Hz - lower frequency for early stages
-                'amplitude': 0.8,         # mA - moderate amplitude
-                'pulse_width': 300,       # μs - wider pulses
-                'duty_cycle': 50,         # % - intermittent stimulation
-                'mode': StimulationMode.BIPHASIC,
-                'interphase_gap': 100,    # μs
-                'burst_count': 5,
-                'burst_frequency': 5,     # Hz
-                'ramp_up_time': 1.0,      # sec - gradual onset
-                'ramp_down_time': 1.0,    # sec - gradual offset
-                'phase_asymmetry': 1.0    # symmetric
-            },
+    def _generate_waveform(self, channel):
+        """
+        Generate stimulation waveform based on channel parameters
+        
+        Parameters:
+        -----------
+        channel : StimulationChannel
+            The channel to generate waveform for
+        
+        Returns:
+        --------
+        waveform : ndarray
+            Generated current waveform (mA)
+        time_vector : ndarray
+            Time vector for the waveform (s)
+        """
+        # Calculate timing parameters
+        sampling_rate = 100000  # Hz (100 kHz for accurate pulse shapes)
+        
+        # Duration for one pulse cycle
+        if channel.mode == StimulationMode.BURST:
+            # For burst mode, generate a burst of pulses
+            cycle_duration = 1.0 / channel.burst_frequency  # seconds
+        else:
+            # For other modes, base on main frequency
+            cycle_duration = 1.0 / channel.frequency  # seconds
+        
+        # Create time vector
+        n_samples = int(cycle_duration * sampling_rate)
+        time_vector = np.linspace(0, cycle_duration, n_samples)
+        
+        # Initialize waveform
+        waveform = np.zeros(n_samples)
+        
+        # Generate waveform based on mode
+        if channel.mode == StimulationMode.BIPHASIC:
+            waveform = self._generate_biphasic_waveform(
+                time_vector, channel.frequency, channel.amplitude,
+                channel.pulse_width, channel.interphase_gap, channel.phase_asymmetry
+            )
+        
+        elif channel.mode == StimulationMode.MONOPHASIC_CATHODIC:
+            waveform = self._generate_monophasic_waveform(
+                time_vector, channel.frequency, -channel.amplitude,
+                channel.pulse_width
+            )
+        
+        elif channel.mode == StimulationMode.MONOPHASIC_ANODIC:
+            waveform = self._generate_monophasic_waveform(
+                time_vector, channel.frequency, channel.amplitude,
+                channel.pulse_width
+            )
+        
+        elif channel.mode == StimulationMode.BURST:
+            waveform = self._generate_burst_waveform(
+                time_vector, channel.frequency, channel.amplitude,
+                channel.pulse_width, channel.interphase_gap, 
+                channel.burst_count
+            )
+        
+        elif channel.mode == StimulationMode.HIGH_FREQUENCY:
+            waveform = self._generate_biphasic_waveform(
+                time_vector, channel.frequency, channel.amplitude,
+                channel.pulse_width, channel.interphase_gap, channel.phase_asymmetry
+            )
+        
+        elif channel.mode == StimulationMode.THETA_BURST:
+            waveform = self._generate_theta_burst_waveform(
+                time_vector, channel.frequency, channel.amplitude,
+                channel.pulse_width, channel.interphase_gap, 
+                channel.burst_count
+            )
+        
+        elif channel.mode == StimulationMode.RANDOMIZED:
+            # Randomized parameters within specified ranges
+            if channel.random_frequency_range[1] > 0:
+                rand_freq = np.random.uniform(
+                    channel.random_frequency_range[0], 
+                    channel.random_frequency_range[1]
+                )
+            else:
+                rand_freq = channel.frequency
+                
+            if channel.random_amplitude_range[1] > 0:
+                rand_amp = np.random.uniform(
+                    channel.random_amplitude_range[0], 
+                    channel.random_amplitude_range[1]
+                )
+            else:
+                rand_amp = channel.amplitude
+                
+            waveform = self._generate_biphasic_waveform(
+                time_vector, rand_freq, rand_amp,
+                channel.pulse_width, channel.interphase_gap, channel.phase_asymmetry
+            )
+        
+        # Apply duty cycle if less than 100%
+        if channel.duty_cycle < 100:
+            # Create duty cycle mask
+            duty_cycle_period = 1.0  # 1 second
+            n_duty_samples = int(duty_cycle_period * sampling_rate)
             
-            # Mid-stage regeneration: axon sprouting and growth
-            NeuralRegenerationPattern.MID_STAGE: {
-                'frequency': 50,          # Hz - medium frequency
-                'amplitude': 1.5,         # mA - stronger amplitude
-                'pulse_width': 200,       # μs
-                'duty_cycle': 70,         # % - more stimulation time
-                'mode': StimulationMode.BURST,
-                'interphase_gap': 80,     # μs
-                'burst_count': 8,
-                'burst_frequency': 8,     # Hz
-                'ramp_up_time': 0.5,      # sec
-                'ramp_down_time': 0.5,    # sec
-                'phase_asymmetry': 1.2    # slight asymmetry
-            },
+            # If duty cycle period is longer than the current waveform, extend waveform
+            if n_duty_samples > n_samples:
+                repetitions = int(np.ceil(n_duty_samples / n_samples))
+                waveform = np.tile(waveform, repetitions)
+                time_vector = np.linspace(0, cycle_duration * repetitions, len(waveform))
+                
+                # Trim to exact size
+                waveform = waveform[:n_duty_samples]
+                time_vector = time_vector[:n_duty_samples]
             
-            # Late-stage regeneration: synaptic refinement
-            NeuralRegenerationPattern.LATE_STAGE: {
-                'frequency': 100,         # Hz - higher frequency
-                'amplitude': 1.2,         # mA
-                'pulse_width': 150,       # μs - narrower pulses
-                'duty_cycle': 80,         # % - more continuous
-                'mode': StimulationMode.HIGH_FREQUENCY,
-                'interphase_gap': 50,     # μs
-                'burst_count': 3,
-                'burst_frequency': 10,    # Hz
-                'ramp_up_time': 0.3,      # sec
-                'ramp_down_time': 0.3,    # sec
-                'phase_asymmetry': 0.8    # asymmetric
-            },
+            # Calculate active samples
+            active_samples = int(n_duty_samples * channel.duty_cycle / 100)
             
-            # Acute injury pattern
-            NeuralRegenerationPattern.ACUTE_INJURY: {
-                'frequency': 10,          # Hz - very low frequency
-                'amplitude': 0.5,         # mA - low amplitude to avoid excitotoxicity
-                'pulse_width': 400,       # μs - wider pulses for better recruitment
-                'duty_cycle': 30,         # % - minimal stimulation
-                'mode': StimulationMode.BIPHASIC,
-                'interphase_gap': 200,    # μs - longer gap
-                'burst_count': 2,
-                'burst_frequency': 2,     # Hz - sparse bursts
-                'ramp_up_time': 2.0,      # sec - very gradual onset
-                'ramp_down_time': 2.0,    # sec - very gradual offset
-                'phase_asymmetry': 1.0    # symmetric
-            },
+            # Create mask
+            mask = np.zeros(len(waveform))
+            mask[:active_samples] = 1.0
             
-            # Chronic injury pattern
-            NeuralRegenerationPattern.CHRONIC_INJURY: {
-                'frequency': 80,          # Hz - higher frequency
-                'amplitude': 2.0,         # mA - higher amplitude
-                'pulse_width': 250,       # μs
-                'duty_cycle': 90,         # % - nearly continuous
-                'mode': StimulationMode.THETA_BURST,
-                'interphase_gap': 80,     # μs
-                'burst_count': 10,
-                'burst_frequency': 5,     # Hz
-                'ramp_up_time': 0.2,      # sec - quick onset
-                'ramp_down_time': 0.5,    # sec
-                'phase_asymmetry': 1.5    # asymmetric
-            },
+            # Apply mask
+            waveform = waveform * mask
+        
+        # Apply ramp up/down if needed (if stimulation just started or is about to stop)
+        if channel.ramp_up_time > 0 and channel.start_time:
+            elapsed = time.time() - channel.start_time
+            if elapsed < channel.ramp_up_time:
+                # Still in ramp-up phase
+                ramp_factor = elapsed / channel.ramp_up_time
+                waveform = waveform * ramp_factor
+        
+        if channel.ramp_down_time > 0 and channel.stop_time:
+            remaining = time.time() - channel.stop_time
+            if remaining < channel.ramp_down_time:
+                # In ramp-down phase
+                ramp_factor = 1.0 - (remaining / channel.ramp_down_time)
+                waveform = waveform * ramp_factor
+        
+        # In a real implementation, this would be sent to the hardware
+        # For simulation, we return the waveform
+        
+        return waveform, time_vector
+    
+    def _generate_biphasic_waveform(self, time_vector, frequency, amplitude, pulse_width, interphase_gap, phase_asymmetry=1.0):
+        """Generate biphasic stimulation waveform"""
+        period = 1.0 / frequency
+        samples_per_period = int(len(time_vector) * period / (time_vector[-1] - time_vector[0]))
+        
+        # Convert microseconds to seconds
+        pulse_width_sec = pulse_width * 1e-6
+        interphase_gap_sec = interphase_gap * 1e-6
+        
+        # Number of samples for each phase
+        samples_per_pulse = int(pulse_width_sec * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        samples_per_gap = int(interphase_gap_sec * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        
+        # Initialize waveform with zeros
+        waveform = np.zeros(len(time_vector))
+        
+        # Generate one period of the waveform
+        for i in range(int(len(time_vector) / samples_per_period)):
+            start_idx = i * samples_per_period
             
-            # Motor nerve pattern
-            NeuralRegenerationPattern.MOTOR_NERVE: {
-                'frequency': 60,          # Hz - good for motor recruitment
-                'amplitude': 1.8,         # mA
-                'pulse_width': 200,       # μs
-                'duty_cycle': 60,         # %
-                'mode': StimulationMode.BURST,
-                'interphase_gap': 100,    # μs
-                'burst_count': 6,
-                'burst_frequency': 10,    # Hz
-                'ramp_up_time': 0.3,      # sec
-                'ramp_down_time': 0.3,    # sec
-                'phase_asymmetry': 1.0    # symmetric
-            },
+            # First (cathodic) phase
+            if start_idx + samples_per_pulse < len(waveform):
+                waveform[start_idx:start_idx + samples_per_pulse] = -amplitude
             
-            # Sensory nerve pattern
-            NeuralRegenerationPattern.SENSORY_NERVE: {
-                'frequency': 40,          # Hz - optimal for sensory fibers
-                'amplitude': 1.0,         # mA - lower amplitude for sensory
-                'pulse_width': 300,       # μs - wider for better recruitment
-                'duty_cycle': 50,         # %
-                'mode': StimulationMode.RANDOMIZED,
-                'interphase_gap': 150,    # μs
-                'burst_count': 4,
-                'burst_frequency': 5,     # Hz
-                'ramp_up_time': 0.5,      # sec
-                'ramp_down_time': 0.5,    # sec
-                'phase_asymmetry': 1.2,   # slight asymmetry
-                'random_frequency_range': (30, 50),  # Hz - variation for better sensory response
-                'random_amplitude_range': (0.8, 1.2)  # mA
-            },
+            # Interphase gap
+            gap_start = start_idx + samples_per_pulse
+            if gap_start + samples_per_gap < len(waveform):
+                # Gap remains at zero
+                pass
             
-            # BDNF-enhancing pattern
-            NeuralRegenerationPattern.BDNF_ENHANCING: {
-                'frequency': 20,          # Hz - lower frequency shown to increase BDNF expression
-                'amplitude': 1.5,         # mA
-                'pulse_width': 250,       # μs
-                'duty_cycle': 75,         # %
-                'mode': StimulationMode.LONG_DURATION_LOW_FREQUENCY,
-                'interphase_gap': 100,    # μs
-                'burst_count': 0,         # No bursting
-                'burst_frequency': 0,     # Hz
-                'ramp_up_time': 1.0,      # sec
-                'ramp_down_time': 1.0,    # sec
-                'phase_asymmetry': 1.0,   # symmetric
-                'pulse_train_interval': 5.0  # sec - long intervals between trains
-            },
+            # Second (anodic) phase
+            second_phase_start = gap_start + samples_per_gap
+            second_phase_amplitude = amplitude / phase_asymmetry  # Adjust amplitude based on asymmetry
+            second_phase_samples = int(samples_per_pulse * phase_asymmetry)  # Adjust duration based on asymmetry
             
-            # GDNF-enhancing pattern
-            NeuralRegenerationPattern.GDNF_ENHANCING: {
-                'frequency': 100,         # Hz - high frequency for GDNF
-                'amplitude': 1.2,         # mA
-                'pulse_width': 200,       # μs
-                'duty_cycle': 40,         # % - intermittent
-                'mode': StimulationMode.PAIRED_ASSOCIATIVE,
-                'interphase_gap': 80,     # μs
-                'burst_count': 10,
-                'burst_frequency': 4,     # Hz - slow burst frequency
-                'ramp_up_time': 0.3,      # sec
-                'ramp_down_time': 0.3,    # sec
-                'phase_asymmetry': 0.8,   # asymmetric
-                'pulse_train_interval': 10.0  # sec - very long intervals
-            }
+            if second_phase_start + second_phase_samples < len(waveform):
+                waveform[second_phase_start:second_phase_start + second_phase_samples] = second_phase_amplitude
+        
+        return waveform
+    
+    def _generate_monophasic_waveform(self, time_vector, frequency, amplitude, pulse_width):
+        """Generate monophasic stimulation waveform"""
+        period = 1.0 / frequency
+        samples_per_period = int(len(time_vector) * period / (time_vector[-1] - time_vector[0]))
+        
+        # Convert microseconds to seconds
+        pulse_width_sec = pulse_width * 1e-6
+        
+        # Number of samples for pulse
+        samples_per_pulse = int(pulse_width_sec * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        
+        # Initialize waveform with zeros
+        waveform = np.zeros(len(time_vector))
+        
+        # Generate one period of the waveform
+        for i in range(int(len(time_vector) / samples_per_period)):
+            start_idx = i * samples_per_period
+            if start_idx + samples_per_pulse < len(waveform):
+                waveform[start_idx:start_idx + samples_per_pulse] = amplitude
+        
+        return waveform
+    
+    def _generate_burst_waveform(self, time_vector, frequency, amplitude, pulse_width, interphase_gap, burst_count):
+        """Generate burst stimulation waveform"""
+        # Calculate timing parameters
+        burst_period = 1.0 / frequency  # Period between pulses within a burst
+        
+        # Convert microseconds to seconds
+        pulse_width_sec = pulse_width * 1e-6
+        interphase_gap_sec = interphase_gap * 1e-6
+        
+        # Calculate samples
+        samples_per_pulse_period = int(burst_period * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        samples_per_pulse = int(pulse_width_sec * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        samples_per_gap = int(interphase_gap_sec * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        
+        # Initialize waveform with zeros
+        waveform = np.zeros(len(time_vector))
+        
+        # Generate biphasic pulses within the burst
+        for i in range(burst_count):
+            start_idx = i * samples_per_pulse_period
+            
+            # Ensure we don't exceed the waveform length
+            if start_idx + samples_per_pulse >= len(waveform):
+                break
+            
+            # First (cathodic) phase
+            waveform[start_idx:start_idx + samples_per_pulse] = -amplitude
+            
+            # Interphase gap
+            gap_start = start_idx + samples_per_pulse
+            
+            # Second (anodic) phase
+            second_phase_start = gap_start + samples_per_gap
+            if second_phase_start + samples_per_pulse < len(waveform):
+                waveform[second_phase_start:second_phase_start + samples_per_pulse] = amplitude
+        
+        return waveform
+    
+    def _generate_theta_burst_waveform(self, time_vector, frequency, amplitude, pulse_width, interphase_gap, burst_count):
+        """Generate theta burst stimulation waveform (TBS)"""
+        # TBS parameters: 3 pulses at 50Hz, repeated at 5Hz theta rhythm
+        theta_freq = 5  # Hz
+        burst_freq = 50  # Hz
+        
+        # Use burst_count from parameters
+        
+        # Calculate timing
+        theta_period = 1.0 / theta_freq  # 200ms between burst starts
+        burst_period = 1.0 / burst_freq  # 20ms between pulses within a burst
+        
+        # Convert microseconds to seconds
+        pulse_width_sec = pulse_width * 1e-6
+        interphase_gap_sec = interphase_gap * 1e-6
+        
+        # Calculate samples
+        samples_per_theta_period = int(theta_period * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        samples_per_burst_period = int(burst_period * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        samples_per_pulse = int(pulse_width_sec * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        samples_per_gap = int(interphase_gap_sec * len(time_vector) / (time_vector[-1] - time_vector[0]))
+        
+        # Initialize waveform with zeros
+        waveform = np.zeros(len(time_vector))
+        
+        # Create TBS pattern: one burst within the theta period
+        for i in range(int(len(time_vector) / samples_per_theta_period)):
+            theta_start = i * samples_per_theta_period
+            
+            # Generate pulses within the burst
+            for j in range(burst_count):
+                pulse_start = theta_start + j * samples_per_burst_period
+                
+                # Ensure we don't exceed the waveform length
+                if pulse_start + samples_per_pulse >= len(waveform):
+                    break
+                
+                # First (cathodic) phase
+                waveform[pulse_start:pulse_start + samples_per_pulse] = -amplitude
+                
+                # Interphase gap
+                gap_start = pulse_start + samples_per_pulse
+                
+                # Second (anodic) phase
+                second_phase_start = gap_start + samples_per_gap
+                if second_phase_start + samples_per_pulse < len(waveform):
+                    waveform[second_phase_start:second_phase_start + samples_per_pulse] = amplitude
+        
+        return waveform
+    
+    def _start_visualization(self):
+        """Start real-time waveform visualization"""
+        if not self.visualization:
+            return
+        
+        # Create figure and axes for visualization
+        self.fig, self.axes = plt.subplots(self.n_channels, 1, figsize=(10, 2 * self.n_channels), sharex=True)
+        
+        # Ensure axes is a list even for single channel
+        if self.n_channels == 1:
+            self.axes = [self.axes]
+        
+        # Set up each axis
+        for i, ax in enumerate(self.axes):
+            ax.set_ylabel(f'Channel {i+1}\n(mA)')
+            ax.set_xlim(0, 0.1)  # 100ms window
+            ax.set_ylim(-5, 5)   # -5 to 5 mA
+            ax.grid(True)
+        
+        self.axes[-1].set_xlabel('Time (s)')
+        
+        # Create empty lines
+        self.lines = []
+        for ax in self.axes:
+            line, = ax.plot([], [], 'b-', lw=2)
+            self.lines.append(line)
+        
+        # Initialize animation
+        def init():
+            for line in self.lines:
+                line.set_data([], [])
+            return self.lines
+        
+        # Update function for animation
+        def update(frame):
+            for i, (line, channel) in enumerate(zip(self.lines, self.channels)):
+                if channel.is_stimulating and channel.current_waveform is not None:
+                    line.set_data(channel.waveform_time, channel.current_waveform)
+                    self.axes[i].set_title(f'Channel {i+1}: {channel.mode.name}, {channel.frequency} Hz, {channel.amplitude} mA')
+                else:
+                    line.set_data([], [])
+                    self.axes[i].set_title(f'Channel {i+1}: Inactive')
+            return self.lines
+        
+        # Create animation
+        self.anim = FuncAnimation(self.fig, update, init_func=init, interval=100, blit=True)
+        
+        # Display the plot
+        plt.tight_layout()
+        plt.ion()  # Interactive mode
+        plt.show()
+    
+    def _emergency_stop(self):
+        """Emergency stop of all stimulation channels"""
+        self.logger.warning("EMERGENCY STOP: Halting all stimulation")
+        
+        # Stop all channels
+        for channel in self.channels:
+            channel.stop_stimulation()
+        
+        # In a real system, would send immediate stop command to hardware
+        if self.hardware_connected:
+            # Emergency halt command (placeholder)
+            pass
+        
+        # Log the emergency stop
+        self._log_event("emergency_stop", {
+            "reason": "Error in stimulation loop"
+        })
+    
+    def _log_event(self, event_type, data):
+        """
+        Log stimulation events
+        
+        Parameters:
+        -----------
+        event_type : str
+            Type of event
+        data : dict
+            Event data
+        """
+        log_entry = {
+            "timestamp": time.time(),
+            "datetime": datetime.now().isoformat(),
+            "event_type": event_type,
+            "data": data
         }
         
-        return patterns
+        self.log_data.append(log_entry)
+        
+        # Periodically write to log file
+        if len(self.log_data) >= 10:
+            self._write_log()
     
-    def _initialize_hardware(self):
-        """Initialize the stimulation hardware (if available)"""
-        # In practice, this would initialize communication with the hardware
-        # This is a placeholder for demonstration
+    def _write_log(self):
+        """Write log data to file"""
+        if not self.log_data:
+            return
+        
         try:
-            # Simulate hardware initialization
-            time.sleep(0.5)
+            with open(self.log_file, 'a') as f:
+                for entry in self.log_data:
+                    f.write(json.dumps(entry) + '\n')
             
-            # Try to detect the actual hardware
-            # Code for hardware detection would go here
-            
-            self.logger.info("Hardware initialization successful")
-            return True
+            # Clear the log data
+            self.log_data = []
         except Exception as e:
-            self.logger.error(f"Hardware initialization failed: {e}")
-            self.hardware_connected = False
-            return False
+            self.logger.error(f"Error writing to log file: {e}")
     
-    def set_parameters(self, channel_id, params):
+    def get_status(self, channel_id=None):
         """
-        Set stimulation parameters for a specific channel
+        Get stimulation status
         
         Parameters:
         -----------
-        channel_id : int
-            Channel ID
-        params : dict
-            Parameter values
+        channel_id : int or None
+            Channel ID (None for all)
             
         Returns:
         --------
-        success : bool
-            Whether the parameters were set successfully
+        status : dict or list
+            Stimulation status
         """
-        if channel_id < 0 or channel_id >= self.n_channels:
-            self.logger.warning(f"Invalid channel ID: {channel_id}")
-            return False
-        
-        # Validate parameters
-        valid_params = self._validate_parameters(params)
-        if not valid_params:
-            self.logger.warning("Invalid parameters")
-            return False
-        
-        # Set the parameters
-        self.channels[channel_id].set_parameters(params)
-        
-        # Apply to hardware if connected
-        if self.hardware_connected:
-            self._apply_parameters_to_hardware(channel_id, params)
-        
-        # Log parameter change
-        self._log_event("set_parameters", {
-            "channel_id": channel_id,
-            "parameters": params
-        })
-        
-        return True
-    
-    def get_parameters(self, channel_id):
-        """
-        Get current stimulation parameters for a specific channel
-        
-        Parameters:
-        -----------
-        channel_id : int
-            Channel ID
+        if channel_id is not None:
+            if channel_id < 0 or channel_id >= self.n_channels:
+                self.logger.warning(f"Invalid channel ID: {channel_id}")
+                return None
             
-        Returns:
-        --------
-        params : dict
-            Parameter values or None if invalid channel
-        """
-        if channel_id < 0 or channel_id >= self.n_channels:
-            self.logger.warning(f"Invalid channel ID: {channel_id}")
-            return None
-        
-        return self.channels[channel_id].get_parameters()
-    
-    def apply_regeneration_pattern(self, channel_id, pattern, customizations=None):
-        """
-        Apply a predefined neural regeneration pattern to a channel
-        
-        Parameters:
-        -----------
-        channel_id : int
-            Channel ID
-        pattern : NeuralRegenerationPattern
-            The predefined pattern to apply
-        customizations : dict or None
-            Optional parameter overrides for the pattern
-            
-        Returns:
-        --------
-        success : bool
-            Whether the pattern was applied successfully
-        """
-        if channel_id < 0 or channel_id >= self.n_channels:
-            self.logger.warning(f"Invalid channel ID: {channel_id}")
-            return False
-        
-        # Check if pattern exists
-        if pattern not in self.pattern_templates:
-            self.logger.warning(f"Pattern '{pattern}' not found")
-            return False
-        
-        # Get the pattern parameters
-        params = self.pattern_templates[pattern].copy()
-        
-        # Apply customizations if provided
-        if customizations:
-            for key, value in customizations.items():
-                if key in params:
-                    params[key] = value
-        
-        # Apply the parameters
-        success = self.set_parameters(channel_id, params)
-        
-        if success:
-            self.logger.info(f"Applied regeneration pattern '{pattern.name}' to channel {channel_id}")
-            
-            # Log pattern application
-            self._log_event("apply_pattern", {
+            channel = self.channels[channel_id]
+            return {
                 "channel_id": channel_id,
-                "pattern": pattern.name,
-                "customizations": customizations
-            })
-        
-        return success
+                "active": channel.active,
+                "is_stimulating": channel.is_stimulating,
+                "parameters": channel.get_parameters(),
+                "start_time": channel.start_time,
+                "duration": time.time() - channel.start_time if channel.start_time else None
+            }
+        else:
+            # Return status for all channels
+            status = []
+            for i, channel in enumerate(self.channels):
+                status.append({
+                    "channel_id": i,
+                    "active": channel.active,
+                    "is_stimulating": channel.is_stimulating,
+                    "parameters": channel.get_parameters(),
+                    "start_time": channel.start_time,
+                    "duration": time.time() - channel.start_time if channel.start_time else None
+                })
+            return status
     
-    def _validate_parameters(self, params):
+    def save_protocol(self, filepath, channel_id=None):
         """
-        Validate stimulation parameters for safety
+        Save stimulation protocol to file
         
         Parameters:
         -----------
-        params : dict
-            Parameter values
+        filepath : str
+            Path to save the protocol
+        channel_id : int or None
+            Channel ID to save (None for all)
             
         Returns:
         --------
-        valid : bool
-            Whether the parameters are valid
+        success : bool
+            Whether the protocol was saved successfully
         """
-        for param, value in params.items():
-            if param in self.safety_limits:
-                min_val, max_val = self.safety_limits[param]
-                if value < min_val or value > max_val:
-                    self.logger.warning(f"Parameter {param} value {value} is outside safe range [{min_val}, {max_val}]")
-                    return False
-        
-        # Advanced validation (parameter combinations)
-        if 'amplitude' in params and 'pulse_width' in params:
-            # Charge density safety check
-            charge = params['amplitude'] * params['pulse_width'] * 1e-6  # mA * μs -> mC
-            if charge > 0.5:  # More than 0.5 mC per phase
-                self.logger.warning(f"Warning: High charge density ({charge:.2f} mC)")
-                # Could return False here for stricter safety
-        
-        return True
-    
-    def _apply_parameters_to_hardware(self, channel_id, params):
-        """
-        Apply parameters to the stimulation hardware
-        
-        Parameters:
-        -----------
-        channel_id : int
-            Channel ID
-        params : dict
-            Parameter values
-        """
-        # In practice, this would send commands to the actual hardware
-        # This is a placeholder for demonstration
         try:
-            # Simulate hardware communication
-            time.sleep(0.1)
-            self.logger.info(f"Applied parameters to hardware: Channel {channel_id}, {params}")
+            # Create protocol dictionary
+            protocol = {
+                "timestamp": time.time(),
+                "datetime": datetime.now().isoformat(),
+                "device_id": self.device_id,
+                "channels": []
+            }
+            
+            # Add channel data
+            if channel_id is not None:
+                if channel_id < 0 or channel_id >= self.n_channels:
+                    self.logger.warning(f"Invalid channel ID: {channel_id}")
+                    return False
+                
+                protocol["channels"].append({
+                    "channel_id": channel_id,
+                    "parameters": self.channels[channel_id].get_parameters()
+                })
+            else:
+                # Add all channels
+                for i, channel in enumerate(self.channels):
+                    protocol["channels"].append({
+                        "channel_id": i,
+                        "parameters": channel.get_parameters()
+                    })
+            
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
+            
+            # Save protocol to file
+            with open(filepath, 'w') as f:
+                json.dump(protocol, f, indent=2)
+            
+            self.logger.info(f"Protocol saved to {filepath}")
             return True
+            
         except Exception as e:
-            self.logger.error(f"Hardware communication error: {e}")
+            self.logger.error(f"Error saving protocol: {e}")
             return False
     
-    def start_stimulation(self, channel_id=None, duration=None):
+    def load_protocol(self, filepath, channel_id=None):
         """
-        Start stimulation on specified channels
+        Load stimulation protocol from file
         
         Parameters:
         -----------
-        channel_id : int or list or None
-            Channel ID(s) to start stimulation on (None for all)
-        duration : float or None
-            Duration in seconds (None for indefinite)
+        filepath : str
+            Path to load the protocol from
+        channel_id : int or None
+            Channel ID to load (None for all)
             
         Returns:
         --------
         success : bool
-            Whether stimulation was started successfully
+            Whether the protocol was loaded successfully
         """
-        if channel_id is None:
-            # Start on all active channels
-            channels_to_start = range(self.n_channels)
-        elif isinstance(channel_id, (list, tuple)):
-            # Start on multiple specific channels
-            channels_to_start = channel_id
-        else:
-            # Start on a single channel
-            channels_to_start = [channel_id]
-        
-        # Validate channels
-        valid_channels = []
-        for ch_id in channels_to_start:
-            if ch_id < 0 or ch_id >= self.n_channels:
-                self.logger.warning(f"Invalid channel ID: {ch_id}")
-                continue
-            valid_channels.append(ch_id)
-        
-        if not valid_channels:
-            self.logger.warning("No valid channels to start stimulation")
+        try:
+            # Load protocol from file
+            with open(filepath, 'r') as f:
+                protocol = json.load(f)
+            
+            # Apply protocol
+            for ch_data in protocol["channels"]:
+                ch_id = ch_data["channel_id"]
+                
+                # Check if we should apply to this channel
+                if channel_id is not None and ch_id != channel_id:
+                    continue
+                
+                # Apply parameters
+                if ch_id < self.n_channels:
+                    self.set_parameters(ch_id, ch_data["parameters"])
+            
+            self.logger.info(f"Protocol loaded from {filepath}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error loading protocol: {e}")
             return False
-        
-        # Start stimulation on each channel
-        for ch_id in valid_channels:
-            success = self.channels[ch_id].start_stimulation()
-            if not success:
-                self.logger.warning(f"Failed to start stimulation on channel {ch_id}")
-        
-        # Start the stimulation thread if not already running
-        if not self.running:
-            self.running = True
-            self.stimulation_thread = threading.Thread(target=self._stimulation_loop, args=(duration,))
-            self.stimulation_thread.daemon = True
-            self.stimulation_thread.start()
-            
-            # Start visualization if enabled
-            if self.visualization and not self.visualization_thread:
-                self._start_visualization()
-        
-        # Log event
-        self._log_event("start_stimulation", {
-            "channels": valid_channels,
-            "duration": duration
-        })
-        
-        return True
     
-    def stop_stimulation(self, channel_id=None):
-        """
-        Stop stimulation on specified channels
+    def close(self):
+        """Clean up resources and close the module"""
+        # Stop all stimulation
+        self.stop_stimulation()
         
-        Parameters:
-        -----------
-        channel_id : int or list or None
-            Channel ID(s) to stop stimulation on (None for all)
-            
-        Returns:
-        --------
-        success : bool
-            Whether stimulation was stopped successfully
-        """
-        if channel_id is None:
-            # Stop on all channels
-            channels_to_stop = range(self.n_channels)
-        elif isinstance(channel_id, (list, tuple)):
-            # Stop on multiple specific channels
-            channels_to_stop = channel_id
-        else:
-            # Stop on a single channel
-            channels_to_stop = [channel_id]
+        # Wait for stimulation thread to end
+        if self.stimulation_thread and self.stimulation_thread.is_alive():
+            self.stimulation_thread.join(timeout=1.0)
         
-        # Stop stimulation on each channel
-        for ch_id in channels_to_stop:
-            if ch_id < 0 or ch_id >= self.n_channels:
-                self.logger.warning(f"Invalid channel ID: {ch_id}")
-                continue
-            
-            self.channels[ch_id].stop_stimulation()
+        # Disconnect from hardware
+        if self.hardware_connected:
+            # Placeholder for hardware disconnect
+            pass
         
-        # Check if any channels are still stimulating
-        any_stimulating = False
-        for channel in self.channels:
-            if channel.is_stimulating:
-                any_stimulating = True
-                break
+        # Write remaining log data
+        self._write_log()
         
-        # Stop the stimulation thread if no channels are stimulating
-        if not any_stimulating:
-            self.running = False
-            if self.stimulation_thread:
-                self.stimulation_thread.join(timeout=1.0)
-            
-            # Stop visualization
-            if self.visualization and self.visualization_thread:
-                plt.close(self.fig)
-                self.visualization_thread = None
-        
-        # Log event
-        self._log_event("stop_stimulation", {
-            "channels": list(channels_to_stop)
-        })
-        
-        return True
+        self.logger.info("Stimulation module closed")
+
+
+# Example usage
+if __name__ == "__main__":
+    # Create stimulation module
+    stim = StimulationModule(n_channels=2, hardware_connected=False, visualization=True)
+    
+    # Apply a neural regeneration pattern
+    stim.apply_regeneration_pattern(0, NeuralRegenerationPattern.EARLY_STAGE)
+    stim.apply_regeneration_pattern(1, NeuralRegenerationPattern.MID_STAGE)
+    
+    # Start stimulation
+    print("\nStarting stimulation on all channels for 10 seconds...")
+    stim.start_stimulation(duration=10)
+    
+    # Wait for completion
+    time.sleep(12)
+    
+    # Check status
+    status = stim.get_status()
+    print("\nStimulation status:")
+    for channel_status in status:
+        print(f"Channel {channel_status['channel_id']}: " + 
+              f"{'Active' if channel_status['active'] else 'Inactive'}, " + 
+              f"{'Stimulating' if channel_status['is_stimulating'] else 'Not stimulating'}")
+    
+    # Save protocol
+    stim.save_protocol("models/stimulation_protocols/regeneration_protocol.json")
+    
+    # Close the module
+    stim.close()
