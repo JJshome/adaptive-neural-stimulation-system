@@ -158,17 +158,3 @@
 * **중추-말초 복합 손상**: 뇌졸중 후 말초신경 자극을 통한 중추신경계 가소성 촉진 연구
 * **유전성 신경병증**: CMT, HNPP 등 유전성 신경병증에서의 장기적 자극 효과 평가
 * **신경퇴행성 질환**: 알츠하이머병, 파킨슨병 등에서 전기자극을 통한 신경보호 및 재생 효과 연구
-
-## 참고 문헌
-
-이 문서에 제시된 데이터는 다음과 같은 연구 결과에 기반합니다:
-
-1. Zhang YT, et al. (2023). "Precise temporal patterns of electrical stimulation promote BDNF-TrkB signaling in peripheral nerve regeneration." Neural Regeneration Research, 18(5): 1042-1051.
-
-2. Chen L, et al. (2022). "Electrical stimulation modulates macrophage polarization and enhances peripheral nerve regeneration." Journal of Neuroinflammation, 19(1): 87.
-
-3. Kawasaki H, et al. (2024). "Optimized electrical stimulation parameters for promoting axonal regeneration after spinal cord injury." Nature Biomedical Engineering, 8(3): 245-261.
-
-4. Smith RJ, et al. (2023). "Frequency-dependent effects of electrical stimulation on neurotrophic factor expression and cell survival after peripheral nerve injury." Journal of Neuroscience, 43(12): 2145-2160.
-
-5. Lee SY, et al. (2024). "Adaptive closed-loop electrical stimulation system enhances functional recovery after nerve injury: A clinical trial." Neurology, 92(6): e639-e651.
