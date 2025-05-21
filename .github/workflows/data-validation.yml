@@ -1,0 +1,128 @@
+name: Data Validation
+
+on:
+  push:
+    paths:
+      - 'data/**'
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'data/**'
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate-data:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy h5py scipy matplotlib
+        
+    - name: Validate CSV files
+      run: |
+        python -c "
+import os
+import pandas as pd
+import numpy as np
+import glob
+
+# 검증 중 발견된 오류 기록
+errors = []
+
+# CSV 파일 검증
+for csv_file in glob.glob('data/samples/*.csv'):
+    try:
+        print(f'Validating {csv_file}...')
+        df = pd.read_csv(csv_file)
+        
+        # 기본 검증: 열 존재 확인
+        if 'time' not in df.columns:
+            errors.append(f'{csv_file}: Missing required \"time\" column')
+        
+        # 시간 열 검증: 단조 증가하는지 확인
+        if 'time' in df.columns and not all(df['time'].diff().dropna() > 0):
+            errors.append(f'{csv_file}: Time column is not monotonically increasing')
+        
+        # 신호 값 검증: 너무 큰 값이나 NaN 확인
+        for col in df.columns:
+            if col != 'time':
+                if df[col].isna().any():
+                    errors.append(f'{csv_file}: Column {col} contains NaN values')
+                if abs(df[col]).max() > 10.0:  # 합리적인 신호 범위 (임의 설정)
+                    errors.append(f'{csv_file}: Column {col} contains unusually large values')
+        
+        print(f'Successfully validated {csv_file}')
+    except Exception as e:
+        errors.append(f'Error validating {csv_file}: {str(e)}')
+
+# 오류 보고 및 종료
+if errors:
+    print('\\nValidation errors found:')
+    for error in errors:
+        print(f'- {error}')
+    exit(1)
+else:
+    print('\\nAll data files validated successfully!')
+        "
+        
+    - name: Generate sample plots
+      run: |
+        python -c "
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import glob
+
+# plots 디렉토리 생성
+os.makedirs('data/plots', exist_ok=True)
+
+# 각 CSV 파일에 대한 플롯 생성
+for csv_file in glob.glob('data/samples/*.csv'):
+    try:
+        base_name = os.path.basename(csv_file).replace('.csv', '')
+        df = pd.read_csv(csv_file)
+        
+        # 플롯 생성
+        plt.figure(figsize=(10, 6))
+        
+        # 다채널 신호인 경우
+        if 'channel_1' in df.columns:
+            for col in df.columns:
+                if col != 'time' and col.startswith('channel_'):
+                    plt.plot(df['time'], df[col], label=col)
+            plt.legend()
+        # 단일 채널 신호인 경우
+        elif 'signal' in df.columns:
+            plt.plot(df['time'], df['signal'])
+        
+        plt.title(f'{base_name}')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Amplitude')
+        plt.grid(True)
+        
+        # 플롯 저장
+        plot_path = f'data/plots/{base_name}.png'
+        plt.savefig(plot_path, dpi=100, bbox_inches='tight')
+        plt.close()
+        
+        print(f'Generated plot for {base_name}')
+    except Exception as e:
+        print(f'Error generating plot for {csv_file}: {str(e)}')
+        "
+        
+    - name: Upload plots as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: data-plots
+        path: data/plots/
+        retention-days: 5
