@@ -2,6 +2,10 @@
 
 신경재생을 위한 적응형 전기자극 최적화 시스템
 
+<p align="center">
+  <img src="docs/images/system_overview.svg" alt="시스템 개요" width="800">
+</p>
+
 ## 개요
 
 이 프로젝트는 신경 재생과 회복을 촉진하기 위한 적응형 전기자극 시스템을 구현합니다. 강화학습과 딥러닝 기술을 활용하여 신경 신호 패턴을 분석하고 최적의 자극 매개변수를 실시간으로 조정합니다.
@@ -9,6 +13,10 @@
 ### 연구 배경
 
 전기자극(ES)은 신경 재생을 촉진하는 유망한 치료법으로, 다음과 같은 메커니즘을 통해 작용합니다:
+
+<p align="center">
+  <img src="docs/images/neural_regeneration.svg" alt="신경 재생 메커니즘" width="800">
+</p>
 
 - 신경영양인자(BDNF, GDNF) 상향 조절
 - cAMP 증가
@@ -26,6 +34,18 @@
 - **시계열 예측**: LSTM 모델을 활용한 신경 반응 예측
 - **적응형 자극 제어**: 실시간 피드백에 기반한 자극 매개변수 조정
 - **데이터 시각화**: 신호, 스펙트럼, 최적화 과정 시각화
+
+### 신경 신호 처리 및 분석
+
+<p align="center">
+  <img src="docs/images/signal_processing.svg" alt="신경 신호 처리 및 분석" width="800">
+</p>
+
+### 강화학습 기반 자극 최적화
+
+<p align="center">
+  <img src="docs/images/reinforcement_learning.svg" alt="강화학습 기반 자극 최적화" width="800">
+</p>
 
 ## 시스템 구조
 
