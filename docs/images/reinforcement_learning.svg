@@ -1,58 +1,180 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
-  <!-- 배경 사각형 -->
-  <rect width="800" height="400" fill="#f8f9fa" rx="10" ry="10" />
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="600" viewBox="0 0 800 600">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&amp;display=swap');
+    
+    .title {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 24px;
+      font-weight: bold;
+      text-anchor: middle;
+    }
+    
+    .subtitle {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 14px;
+      text-anchor: middle;
+    }
+    
+    .component {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    
+    .description {
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 12px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    
+    .arrow {
+      fill: none;
+      stroke: #333;
+      stroke-width: 2;
+      marker-end: url(#arrowhead);
+    }
+    
+    .dashed {
+      stroke-dasharray: 5, 5;
+    }
+    
+    .agent {
+      fill: #f8d7da;
+    }
+    
+    .environment {
+      fill: #d1e7dd;
+    }
+    
+    .memory {
+      fill: #cff4fc;
+    }
+    
+    .reward {
+      fill: #fff3cd;
+    }
+    
+    .learning {
+      fill: #e2daf5;
+    }
+    
+    .parameters {
+      fill: #e2f1ff;
+    }
+    
+    .code-box {
+      fill: #f8f9fa;
+      stroke: #999;
+      stroke-width: 1;
+    }
+    
+    .code-text {
+      font-family: monospace;
+      font-size: 10px;
+      text-anchor: start;
+    }
+  </style>
   
-  <!-- 제목 -->
-  <text x="400" y="40" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#343a40">강화학습 기반 자극 매개변수 최적화</text>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333" />
+    </marker>
+  </defs>
   
-  <!-- 중앙 그래프 영역 -->
-  <rect x="280" y="70" width="440" height="260" fill="#ffffff" stroke="#cccccc" stroke-width="1" />
+  <!-- Title -->
+  <text x="400" y="40" class="title">강화학습 기반 자극 매개변수 최적화</text>
+  <text x="400" y="65" class="subtitle">DQN(Deep Q-Network) 에이전트를 통한 맞춤형 전기자극 제어</text>
   
-  <!-- 그래프 축 -->
-  <line x1="320" y1="290" x2="700" y2="290" stroke="#343a40" stroke-width="2" />
-  <line x1="320" y1="290" x2="320" y2="110" stroke="#343a40" stroke-width="2" />
+  <!-- DQN Agent -->
+  <rect x="120" y="100" width="180" height="120" rx="10" class="agent" />
+  <text x="210" y="130" class="component">DQN 에이전트</text>
+  <text x="210" y="155" class="description">심층 Q 네트워크</text>
+  <text x="210" y="175" class="description">정책 네트워크 / 타겟 네트워크</text>
+  <text x="210" y="195" class="description">ε-greedy 행동 선택</text>
   
-  <!-- 축 레이블 -->
-  <text x="510" y="320" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#343a40">학습 에피소드</text>
-  <text x="280" y="200" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#343a40" transform="rotate(-90, 280, 200)">보상</text>
+  <!-- Stimulation Parameters -->
+  <rect x="500" y="100" width="180" height="120" rx="10" class="parameters" />
+  <text x="590" y="130" class="component">자극 매개변수</text>
+  <text x="590" y="155" class="description">주파수: 1-200Hz</text>
+  <text x="590" y="175" class="description">진폭: 0.1-5mA</text>
+  <text x="590" y="195" class="description">펄스 폭: 0.1-1ms</text>
   
-  <!-- 학습 곡선 -->
-  <path d="M320,260 Q350,250 380,230 Q410,210 440,190 Q470,170 500,160 Q530,150 560,145 Q590,140 620,135 Q650,130 680,120" fill="none" stroke="#1e88e5" stroke-width="3" />
+  <!-- Environment (Nervous System) -->
+  <rect x="500" y="280" width="180" height="120" rx="10" class="environment" />
+  <text x="590" y="310" class="component">환경 (신경계)</text>
+  <text x="590" y="335" class="description">신경 조직 상태</text>
+  <text x="590" y="355" class="description">자극 반응 신호</text>
+  <text x="590" y="375" class="description">기능적 변화</text>
   
-  <!-- 최적 지점 -->
-  <circle cx="680" cy="120" r="6" fill="#ef5350" />
-  <text x="680" y="105" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#343a40">최적 매개변수</text>
+  <!-- Reward Function -->
+  <rect x="120" y="280" width="180" height="120" rx="10" class="reward" />
+  <text x="210" y="310" class="component">보상 함수</text>
+  <text x="210" y="335" class="description">신경 활동 증가</text>
+  <text x="210" y="355" class="description">패턴 정규화</text>
+  <text x="210" y="375" class="description">부작용 패널티</text>
   
-  <!-- Agent 아이콘 -->
-  <g transform="translate(100, 140)">
-    <rect x="0" y="0" width="120" height="60" rx="10" ry="10" fill="#b3e5fc" stroke="#0288d1" stroke-width="2" />
-    <text x="60" y="25" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#01579b">DQN 에이전트</text>
-    <text x="60" y="45" font-family="Arial" font-size="12" text-anchor="middle" fill="#01579b">매개변수 최적화</text>
-  </g>
+  <!-- Experience Replay Memory -->
+  <rect x="120" y="460" width="180" height="100" rx="10" class="memory" />
+  <text x="210" y="490" class="component">경험 리플레이 메모리</text>
+  <text x="210" y="510" class="description">(상태, 행동, 보상, 다음상태, 완료)</text>
+  <text x="210" y="530" class="description">배치 학습을 위한 샘플링</text>
   
-  <!-- 환경 아이콘 -->
-  <g transform="translate(100, 240)">
-    <rect x="0" y="0" width="120" height="60" rx="10" ry="10" fill="#c8e6c9" stroke="#4caf50" stroke-width="2" />
-    <text x="60" y="25" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#1b5e20">신경 환경</text>
-    <text x="60" y="45" font-family="Arial" font-size="12" text-anchor="middle" fill="#1b5e20">상태/보상 제공</text>
-  </g>
+  <!-- Learning Process -->
+  <rect x="500" y="460" width="180" height="100" rx="10" class="learning" />
+  <text x="590" y="490" class="component">학습 과정</text>
+  <text x="590" y="510" class="description">손실 함수 최소화</text>
+  <text x="590" y="530" class="description">타겟 네트워크 업데이트</text>
   
-  <!-- 에이전트-환경 화살표 -->
-  <path d="M160,200 L160,240" stroke="#343a40" stroke-width="2" />
-  <polygon points="160,240 155,230 165,230" fill="#343a40" />
-  <path d="M220,270 L320,270" stroke="#343a40" stroke-width="2" />
-  <polygon points="320,270 310,265 310,275" fill="#343a40" />
+  <!-- Q-Network Code Box -->
+  <rect x="340" y="140" width="120" height="80" class="code-box" />
+  <text x="350" y="155" class="code-text">class DQNNetwork:</text>
+  <text x="350" y="170" class="code-text">  def __init__(self):</text>
+  <text x="350" y="185" class="code-text">    self.model = Sequential()</text>
+  <text x="350" y="200" class="code-text">    self.model.add(Dense(64))</text>
+  <text x="350" y="215" class="code-text">    # 출력층: 행동 공간</text>
   
-  <!-- 매개변수 설명 -->
-  <g transform="translate(400, 340)">
-    <rect x="0" y="0" width="300" height="40" rx="5" ry="5" fill="#fff3e0" stroke="#ffb74d" stroke-width="1" />
-    <text x="150" y="25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="#e65100">진폭 | 주파수 | 펄스 폭</text>
-  </g>
+  <!-- Reward Function Code Box -->
+  <rect x="340" y="320" width="120" height="80" class="code-box" />
+  <text x="350" y="335" class="code-text">def calculate_reward(state, action):</text>
+  <text x="350" y="350" class="code-text">  # 신경 활동 증가 보상</text>
+  <text x="350" y="365" class="code-text">  activity_reward = ...</text>
+  <text x="350" y="380" class="code-text">  # 부작용 패널티</text>
+  <text x="350" y="395" class="code-text">  return activity_reward - penalty</text>
   
-  <!-- 매개변수 공간 그래프 하단 설명 -->
-  <g transform="translate(320, 70)">
-    <rect x="0" y="0" width="200" height="30" rx="5" ry="5" fill="#e3f2fd" stroke="#bbdefb" stroke-width="1" />
-    <text x="100" y="20" font-family="Arial" font-size="12" font-weight="bold" text-anchor="middle" fill="#0d47a1">매개변수 공간 탐색 학습 곡선</text>
-  </g>
+  <!-- Arrows -->
+  <!-- From Agent to Parameters -->
+  <path d="M 300 160 L 500 160" class="arrow" />
+  <text x="390" y="145" class="description">행동 선택</text>
+  
+  <!-- From Parameters to Environment -->
+  <path d="M 590 220 L 590 280" class="arrow" />
+  <text x="605" y="250" class="description">자극 적용</text>
+  
+  <!-- From Environment to Reward -->
+  <path d="M 500 340 L 300 340" class="arrow" />
+  <text x="390" y="325" class="description">상태 관찰</text>
+  
+  <!-- From Reward to Agent -->
+  <path d="M 210 280 L 210 220" class="arrow" />
+  <text x="225" y="250" class="description">보상 신호</text>
+  
+  <!-- Agent to Memory -->
+  <path d="M 210 220 L 210 460" class="arrow" />
+  <text x="225" y="400" class="description">경험 저장</text>
+  
+  <!-- Memory to Learning -->
+  <path d="M 300 510 L 500 510" class="arrow" />
+  <text x="400" y="490" class="description">경험 샘플링</text>
+  
+  <!-- Learning to Agent -->
+  <path d="M 580 460 C 580 400 400 300 300 200 C 290 180 280 160 210 160" class="arrow dashed" />
+  <text x="400" y="410" class="description">모델 업데이트</text>
+  
+  <!-- Feedback Loop for Continuous Learning -->
+  <path d="M 150 380 C 120 380 100 400 100 450 C 100 500 150 550 350 550 C 550 550 600 520 650 480" class="arrow dashed" />
+  <text x="200" y="565" class="description">지속적 학습 및 최적화</text>
 </svg>
