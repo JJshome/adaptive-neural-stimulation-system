@@ -62,12 +62,6 @@
    - 16채널 미세전극배열(micro-electrode array) 시스템을 통한 기록
    - 손상 전/후, 회복 과정에 따른 시간별 데이터 포함
 
-2. **공개 데이터셋 활용**
-   - **Nerve Injury EEG Dataset (NIED)**: 신경 손상 및 회복 과정 동안의 신경 전기 활동 데이터
-   - **Peripheral Nerve Recording Database (PNRDB)**: 다양한 종류의 말초신경 기록 지표
-   - **GEO Dataset GSE135076**: 전기자극 전/후 신경 조직의 유전자 발현 데이터
-   - **SPARC Portal Datasets**: 자율신경계 및 말초신경계 기록 데이터
-
 ### 데이터 전처리 및 특성 추출
 수집된 데이터는 다음과 같은 전처리 과정을 거칩니다:
 
