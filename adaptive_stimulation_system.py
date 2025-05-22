@@ -52,6 +52,24 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import List, Tuple, Dict, Any, Optional, Union, Callable
+import logging
+import warnings
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# TensorFlow import 처리
+try:
+    import tensorflow as tf
+    from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, History
+    TF_AVAILABLE = True
+except ImportError:
+    TF_AVAILABLE = False
+    logger.warning("TensorFlow를 찾을 수 없습니다. LSTM 기능이 제한될 수 있습니다.")
+    # 더미 History 클래스 정의
+    class History:
+        pass
 
 import sys
 sys.path.append('.')
@@ -89,9 +107,10 @@ class AdaptiveStimulationSystem:
         is_learning (bool): 학습 모드 여부
         episode_count (int): 현재 에피소드 카운트
         step_count (int): 현재 스텝 카운트
+        neural_regeneration_params (Dict[str, Any]): 신경재생 관련 파라미터
     """
     
-    def __init__(self, config: Dict[str, Any] = None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         AdaptiveStimulationSystem 초기화
         
@@ -106,6 +125,7 @@ class AdaptiveStimulationSystem:
                 - 'use_reinforcement_learning': 강화학습 사용 여부
                 - 'save_path': 결과 저장 경로
                 - 'model_path': 모델 저장 경로
+                - 'regeneration_stage': 신경재생 단계 ('acute', 'subacute', 'regeneration', 'remodeling')
         
         Raises:
             ValueError: 설정 값에 오류가 있는 경우 발생
@@ -119,19 +139,46 @@ class AdaptiveStimulationSystem:
             'use_lstm': True,
             'use_reinforcement_learning': True,
             'save_path': 'results',
-            'model_path': 'models/saved'
+            'model_path': 'models/saved',
+            'regeneration_stage': 'acute'  # 신경재생 단계
+        }
+        
+        # 신경재생 메커니즘 관련 파라미터
+        self.neural_regeneration_params = {
+            'acute': {  # 급성기 (0-3일)
+                'frequency_range': (10, 50),  # Hz
+                'amplitude_range': (0.1, 1.0),  # mA
+                'pulse_width': 200,  # μs
+                'primary_mechanism': 'anti_inflammatory',
+                'target_factors': ['TNF-α 억제', 'IL-10 증가']
+            },
+            'subacute': {  # 아급성기 (4-14일)
+                'frequency_range': (20, 100),  # Hz, BDNF 발현 최적화
+                'amplitude_range': (0.5, 2.0),  # mA
+                'pulse_width': 300,  # μs
+                'primary_mechanism': 'neurotrophic_factor_induction',
+                'target_factors': ['BDNF 발현', 'GDNF 발현', '슈반세포 활성화']
+            },
+            'regeneration': {  # 재생기 (14-60일)
+                'frequency_range': (50, 100),  # Hz, cAMP/PKA/CREB 경로 활성화
+                'amplitude_range': (1.0, 3.0),  # mA
+                'pulse_width': 400,  # μs
+                'primary_mechanism': 'axon_growth_acceleration',
+                'target_factors': ['GAP-43 발현', 'cAMP 증가', '축삭 성장']
+            },
+            'remodeling': {  # 재조직화기 (2-6개월)
+                'frequency_range': (20, 200),  # Hz, 시냅스 가소성
+                'amplitude_range': (0.5, 2.5),  # mA
+                'pulse_width': 350,  # μs
+                'primary_mechanism': 'synaptic_plasticity',
+                'target_factors': ['시냅스 형성', '기능적 통합', '감각운동 협응']
+            }
         }
         
         # 사용자 설정으로 업데이트
         if config:
             # 설정 유효성 검사
-            if 'sampling_rate' in config and config['sampling_rate'] <= 0:
-                raise ValueError("샘플링 레이트는 양수여야 합니다.")
-            if 'sequence_length' in config and config['sequence_length'] <= 0:
-                raise ValueError("시퀀스 길이는 양수여야 합니다.")
-            if 'feature_dim' in config and config['feature_dim'] <= 0:
-                raise ValueError("특성 차원 수는 양수여야 합니다.")
-                
+            self._validate_config(config)
             self.config.update(config)
             
         # 유틸리티 인스턴스 생성
@@ -153,24 +200,12 @@ class AdaptiveStimulationSystem:
         self.environment = None
         self.agent = None
         if self.config['use_reinforcement_learning']:
-            self.environment = StimulationEnvironment(
-                state_size=self.config['feature_dim'],
-                amplitude_levels=5,
-                frequency_levels=5,
-                pulse_width_levels=5
-            )
-            self.agent = DQNAgent(
-                state_size=self.config['feature_dim'],
-                action_size=self.environment.action_size
-            )
+            self._initialize_reinforcement_learning()
             
         # LSTM 모델
         self.lstm_model = None
-        if self.config['use_lstm']:
-            self.lstm_model = LSTMModel(
-                sequence_length=self.config['sequence_length'],
-                feature_dim=self.config['feature_dim']
-            )
+        if self.config['use_lstm'] and TF_AVAILABLE:
+            self._initialize_lstm()
             
         # 학습 데이터
         self.training_data = {
@@ -186,6 +221,45 @@ class AdaptiveStimulationSystem:
         self.is_learning = False
         self.episode_count = 0
         self.step_count = 0
+        
+    def _validate_config(self, config: Dict[str, Any]) -> None:
+        """설정 값 유효성 검사"""
+        if 'sampling_rate' in config and config['sampling_rate'] <= 0:
+            raise ValueError("샘플링 레이트는 양수여야 합니다.")
+        if 'sequence_length' in config and config['sequence_length'] <= 0:
+            raise ValueError("시퀀스 길이는 양수여야 합니다.")
+        if 'feature_dim' in config and config['feature_dim'] <= 0:
+            raise ValueError("특성 차원 수는 양수여야 합니다.")
+        if 'regeneration_stage' in config:
+            valid_stages = ['acute', 'subacute', 'regeneration', 'remodeling']
+            if config['regeneration_stage'] not in valid_stages:
+                raise ValueError(f"유효하지 않은 재생 단계: {config['regeneration_stage']}. "
+                               f"다음 중 하나를 선택하세요: {valid_stages}")
+    
+    def _initialize_reinforcement_learning(self) -> None:
+        """강화학습 환경 및 에이전트 초기화"""
+        # 재생 단계에 따른 파라미터 범위 설정
+        stage_params = self.neural_regeneration_params[self.config['regeneration_stage']]
+        
+        self.environment = StimulationEnvironment(
+            state_size=self.config['feature_dim'],
+            amplitude_levels=5,
+            frequency_levels=5,
+            pulse_width_levels=5,
+            frequency_range=stage_params['frequency_range'],
+            amplitude_range=stage_params['amplitude_range']
+        )
+        self.agent = DQNAgent(
+            state_size=self.config['feature_dim'],
+            action_size=self.environment.action_size
+        )
+    
+    def _initialize_lstm(self) -> None:
+        """LSTM 모델 초기화"""
+        self.lstm_model = LSTMModel(
+            sequence_length=self.config['sequence_length'],
+            feature_dim=self.config['feature_dim']
+        )
         
     def load_data(self, file_path: str, **kwargs) -> Tuple[np.ndarray, float]:
         """
@@ -234,6 +308,8 @@ class AdaptiveStimulationSystem:
         self.config['sampling_rate'] = sampling_rate
         self.signal_processor.sampling_rate = sampling_rate
         self.stimulation_controller.sampling_rate = sampling_rate
+        
+        logger.info(f"데이터 로드 완료: {data.shape}, 샘플링 레이트: {sampling_rate}Hz")
         
         return data, sampling_rate
     
@@ -298,6 +374,7 @@ class AdaptiveStimulationSystem:
         자극 파형 생성
         
         지정된 매개변수를 사용하여 자극 파형을 생성합니다.
+        신경재생 단계에 따라 최적화된 파라미터를 사용합니다.
         
         Args:
             duration (float): 자극 지속 시간 (초)
@@ -318,8 +395,20 @@ class AdaptiveStimulationSystem:
         if duration <= 0:
             raise ValueError("자극 지속 시간은 0보다 커야 합니다.")
             
+        # 재생 단계에 따른 기본 파라미터 설정
+        stage_params = self.neural_regeneration_params[self.config['regeneration_stage']]
+        default_params = {
+            'frequency': np.mean(stage_params['frequency_range']),
+            'amplitude': np.mean(stage_params['amplitude_range']),
+            'pulse_width': stage_params['pulse_width'],
+            'waveform': 'biphasic'  # 기본적으로 biphasic 파형 사용
+        }
+        
+        # 사용자 파라미터로 업데이트
+        final_params = {**default_params, **params}
+        
         try:
-            return self.stimulation_controller.generate_stimulation_waveform(duration, **params)
+            return self.stimulation_controller.generate_stimulation_waveform(duration, **final_params)
         except Exception as e:
             raise ValueError(f"자극 파형 생성 중 오류 발생: {e}")
     
@@ -350,6 +439,15 @@ class AdaptiveStimulationSystem:
         if method not in ['grid', 'pso', 'bayesian']:
             raise ValueError(f"지원되지 않는 최적화 방법: {method}. 'grid', 'pso', 'bayesian' 중 하나를 사용하세요.")
             
+        # 재생 단계에 따른 파라미터 범위 설정
+        stage_params = self.neural_regeneration_params[self.config['regeneration_stage']]
+        if method == 'grid' and 'parameter_ranges' not in kwargs:
+            kwargs['parameter_ranges'] = {
+                'frequency': np.linspace(*stage_params['frequency_range'], 10),
+                'amplitude': np.linspace(*stage_params['amplitude_range'], 10),
+                'pulse_width': [stage_params['pulse_width']]
+            }
+            
         try:
             if method == 'grid':
                 if 'parameter_ranges' not in kwargs:
@@ -372,6 +470,7 @@ class AdaptiveStimulationSystem:
                     kwargs.get('num_iterations', 20)
                 )
                 
+            logger.info(f"최적화 완료 - 최적 점수: {result['score']:.4f}")
             return result
             
         except Exception as e:
@@ -451,12 +550,15 @@ class AdaptiveStimulationSystem:
                 
                 # 진행 상황 출력 (10 에피소드마다)
                 if (episode + 1) % 10 == 0:
-                    print(f"에피소드 {episode + 1}/{num_episodes}, 총 보상: {total_reward:.4f}")
+                    avg_reward = np.mean(total_rewards[-10:])
+                    logger.info(f"에피소드 {episode + 1}/{num_episodes}, "
+                               f"평균 보상: {avg_reward:.4f}, "
+                               f"재생 단계: {self.config['regeneration_stage']}")
             
             # 학습된 모델 저장
             model_path = os.path.join(self.config['model_path'], 'dqn_model.h5')
             self.agent.save(model_path)
-            print(f"DQN 모델이 '{model_path}'에 저장되었습니다.")
+            logger.info(f"DQN 모델이 '{model_path}'에 저장되었습니다.")
             
             # 학습 모드 비활성화
             self.is_learning = False
@@ -468,7 +570,7 @@ class AdaptiveStimulationSystem:
             raise ValueError(f"DQN 학습 중 오류 발생: {e}")
     
     def train_lstm(self, data: np.ndarray, epochs: int = 100, batch_size: int = 32,
-                  validation_split: float = 0.2) -> tf.keras.callbacks.History:
+                  validation_split: float = 0.2) -> History:
         """
         LSTM 모델 학습
         
@@ -481,13 +583,16 @@ class AdaptiveStimulationSystem:
             validation_split (float, optional): 검증 데이터 비율. 기본값은 0.2.
             
         Returns:
-            tf.keras.callbacks.History: 학습 과정에 대한 히스토리 객체
+            History: 학습 과정에 대한 히스토리 객체
             
         Raises:
             ValueError: LSTM이 비활성화되어 있거나 입력 데이터에 문제가 있는 경우 발생
         """
         if not self.config['use_lstm']:
             raise ValueError("LSTM 기능이 비활성화되어 있습니다. 'use_lstm' 설정을 True로 변경하세요.")
+            
+        if not TF_AVAILABLE:
+            raise ValueError("TensorFlow가 설치되지 않았습니다. LSTM 모델을 사용하려면 TensorFlow를 설치하세요.")
             
         if data is None or data.size == 0:
             raise ValueError("학습 데이터가 비어 있습니다.")
@@ -509,20 +614,22 @@ class AdaptiveStimulationSystem:
             X = X.reshape(X.shape[0], X.shape[1], 1)
             
             # 콜백 함수 설정
-            from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-            
-            callbacks = [
-                EarlyStopping(
-                    monitor='val_loss',
-                    patience=10,
-                    restore_best_weights=True
-                ),
-                ModelCheckpoint(
-                    os.path.join(self.config['model_path'], 'lstm_model.h5'),
-                    monitor='val_loss',
-                    save_best_only=True
-                )
-            ]
+            callbacks = []
+            if TF_AVAILABLE:
+                callbacks = [
+                    EarlyStopping(
+                        monitor='val_loss',
+                        patience=10,
+                        restore_best_weights=True,
+                        verbose=1
+                    ),
+                    ModelCheckpoint(
+                        os.path.join(self.config['model_path'], 'lstm_model.h5'),
+                        monitor='val_loss',
+                        save_best_only=True,
+                        verbose=1
+                    )
+                ]
             
             # 모델 학습
             history = self.lstm_model.train(
@@ -533,14 +640,14 @@ class AdaptiveStimulationSystem:
                 callbacks=callbacks
             )
             
-            print(f"LSTM 모델이 '{self.config['model_path']}/lstm_model.h5'에 저장되었습니다.")
+            logger.info(f"LSTM 모델이 '{self.config['model_path']}/lstm_model.h5'에 저장되었습니다.")
             
             return history
             
         except Exception as e:
             raise ValueError(f"LSTM 학습 중 오류 발생: {e}")
     
-    def predict_lstm(self, data: np.ndarray) -> np.ndarray:
+    def predict_lstm(self, data: np.ndarray) -> float:
         """
         LSTM으로 신호 예측
         
@@ -550,13 +657,16 @@ class AdaptiveStimulationSystem:
             data (np.ndarray): 입력 신호 데이터
             
         Returns:
-            np.ndarray: 예측된 다음 시점의 값
+            float: 예측된 다음 시점의 값
             
         Raises:
             ValueError: LSTM이 비활성화되어 있거나 입력 데이터가 너무 짧은 경우 발생
         """
         if not self.config['use_lstm']:
             raise ValueError("LSTM 기능이 비활성화되어 있습니다. 'use_lstm' 설정을 True로 변경하세요.")
+            
+        if not TF_AVAILABLE:
+            raise ValueError("TensorFlow가 설치되지 않았습니다. LSTM 모델을 사용하려면 TensorFlow를 설치하세요.")
             
         if data is None or data.size == 0:
             raise ValueError("예측할 데이터가 비어 있습니다.")
@@ -571,7 +681,7 @@ class AdaptiveStimulationSystem:
             # 예측
             prediction = self.lstm_model.predict(X)
             
-            return prediction[0, 0]
+            return float(prediction[0, 0])
             
         except Exception as e:
             raise ValueError(f"LSTM 예측 중 오류 발생: {e}")
@@ -582,6 +692,7 @@ class AdaptiveStimulationSystem:
         적응형 자극 수행
         
         신경 신호 데이터를 분석하고 강화학습을 통해 최적화된 자극 매개변수를 적용합니다.
+        신경재생 단계에 따라 적절한 자극 프로토콜을 적용합니다.
         
         Args:
             data (np.ndarray): 신호 데이터
@@ -594,6 +705,8 @@ class AdaptiveStimulationSystem:
                 - 'stimulation_waveform': 생성된 자극 파형
                 - 'predicted_response': 예측된 신경 반응 (LSTM 활성화 시)
                 - 'features': 추출된 신호 특성
+                - 'regeneration_stage': 현재 신경재생 단계
+                - 'target_mechanisms': 목표 메커니즘
             
         Raises:
             ValueError: 데이터가 비어있거나 처리 중 오류 발생 시
@@ -622,17 +735,20 @@ class AdaptiveStimulationSystem:
             if target_response is not None and self.environment is not None:
                 self.environment.set_target_response(target_response)
             
+            # 재생 단계 정보 가져오기
+            stage_params = self.neural_regeneration_params[self.config['regeneration_stage']]
+            
             # 자극 매개변수 선택
             if self.config['use_reinforcement_learning'] and self.agent is not None:
                 # 학습된 DQN 에이전트로 최적 행동 선택
                 action = self.agent.act(state.reshape(1, -1))
                 stim_params = self.environment.get_action_description(action)
             else:
-                # 기본 자극 매개변수
+                # 재생 단계에 따른 기본 자극 매개변수
                 stim_params = {
-                    'amplitude': 1.0,  # mA
-                    'frequency': 130.0,  # Hz
-                    'pulse_width': 60.0  # μs
+                    'amplitude': np.mean(stage_params['amplitude_range']),
+                    'frequency': np.mean(stage_params['frequency_range']),
+                    'pulse_width': stage_params['pulse_width']
                 }
             
             # 자극 제어기 매개변수 업데이트
@@ -644,22 +760,54 @@ class AdaptiveStimulationSystem:
             
             # 자극 효과 예측 (LSTM 사용 시)
             predicted_response = None
-            if self.config['use_lstm'] and self.lstm_model is not None:
+            if self.config['use_lstm'] and self.lstm_model is not None and TF_AVAILABLE:
                 try:
                     predicted_response = self.predict_lstm(processed_data)
                 except Exception as e:
-                    print(f"LSTM 예측 중 오류 발생: {e}")
+                    logger.warning(f"LSTM 예측 중 오류 발생: {e}")
             
             # 결과 반환
-            return {
+            result = {
                 'stimulation_parameters': stim_params,
                 'stimulation_waveform': stimulation,
                 'predicted_response': predicted_response,
-                'features': features
+                'features': features,
+                'regeneration_stage': self.config['regeneration_stage'],
+                'target_mechanisms': stage_params['target_factors'],
+                'primary_mechanism': stage_params['primary_mechanism']
             }
+            
+            logger.info(f"적응형 자극 적용 완료 - 단계: {self.config['regeneration_stage']}, "
+                       f"주파수: {stim_params['frequency']}Hz, "
+                       f"진폭: {stim_params['amplitude']}mA")
+            
+            return result
             
         except Exception as e:
             raise ValueError(f"적응형 자극 적용 중 오류 발생: {e}")
+    
+    def set_regeneration_stage(self, stage: str) -> None:
+        """
+        신경재생 단계 설정
+        
+        Args:
+            stage (str): 재생 단계 ('acute', 'subacute', 'regeneration', 'remodeling')
+            
+        Raises:
+            ValueError: 유효하지 않은 재생 단계인 경우
+        """
+        valid_stages = ['acute', 'subacute', 'regeneration', 'remodeling']
+        if stage not in valid_stages:
+            raise ValueError(f"유효하지 않은 재생 단계: {stage}. "
+                           f"다음 중 하나를 선택하세요: {valid_stages}")
+        
+        self.config['regeneration_stage'] = stage
+        
+        # 강화학습 환경 재초기화 (활성화된 경우)
+        if self.config['use_reinforcement_learning']:
+            self._initialize_reinforcement_learning()
+        
+        logger.info(f"신경재생 단계가 '{stage}'로 변경되었습니다.")
     
     def visualize_results(self, data: dict, save_path: Optional[str] = None) -> Dict[str, plt.Figure]:
         """
@@ -719,7 +867,7 @@ class AdaptiveStimulationSystem:
                 fig = self.visualizer.plot_stimulation_waveform(
                     data['stimulation_waveform'], 
                     sampling_rate=self.config['sampling_rate'],
-                    title="자극 파형",
+                    title=f"자극 파형 - {self.config['regeneration_stage']} 단계",
                     save_path=save_path and os.path.join(save_path, "stimulation.png")
                 )
                 figures['stimulation'] = fig
@@ -752,6 +900,25 @@ class AdaptiveStimulationSystem:
             
         except Exception as e:
             raise ValueError(f"결과 시각화 중 오류 발생: {e}")
+    
+    def get_regeneration_info(self) -> Dict[str, Any]:
+        """
+        현재 신경재생 단계 정보 반환
+        
+        Returns:
+            Dict[str, Any]: 현재 재생 단계에 대한 상세 정보
+        """
+        stage = self.config['regeneration_stage']
+        return {
+            'current_stage': stage,
+            'parameters': self.neural_regeneration_params[stage],
+            'description': {
+                'acute': '급성기 (0-3일): 염증 억제 및 신경보호',
+                'subacute': '아급성기 (4-14일): 신경영양인자 유도 및 슈반세포 활성화',
+                'regeneration': '재생기 (14-60일): 축삭 성장 가속화 및 수초화',
+                'remodeling': '재조직화기 (2-6개월): 시냅스 가소성 및 기능적 통합'
+            }[stage]
+        }
 
 
 # 메인 실행 코드
@@ -770,7 +937,8 @@ def main():
         'use_lstm': True,
         'use_reinforcement_learning': True,
         'save_path': 'results',
-        'model_path': 'models/saved'
+        'model_path': 'models/saved',
+        'regeneration_stage': 'acute'  # 초기 단계 설정
     }
     
     # 시스템 인스턴스 생성
@@ -785,16 +953,20 @@ def main():
     print("신호 전처리 중...")
     processed_signal = system.preprocess_data(signal)
     
+    # 현재 재생 단계 정보 출력
+    regen_info = system.get_regeneration_info()
+    print(f"\n현재 신경재생 단계: {regen_info['description']}")
+    
     # DQN 에이전트 학습
-    print("DQN 에이전트 학습 중...")
+    print("\nDQN 에이전트 학습 중...")
     rewards = system.train_dqn(num_episodes=50, batch_size=32, max_steps=100)
     
     # 적응형 자극 수행
-    print("적응형 자극 적용 중...")
+    print("\n적응형 자극 적용 중...")
     result = system.adaptive_stimulation(processed_signal, duration=5.0)
     
     # 결과 시각화
-    print("결과 시각화 중...")
+    print("\n결과 시각화 중...")
     data = {
         'signal': processed_signal,
         'stimulation_waveform': result['stimulation_waveform'],
@@ -806,6 +978,7 @@ def main():
     # 결과 출력
     print("\n자극 매개변수:", result['stimulation_parameters'])
     print("특성:", result['features'])
+    print("목표 메커니즘:", result['target_mechanisms'])
     
     print(f"\n결과가 '{config['save_path']}' 폴더에 저장되었습니다.")
     
