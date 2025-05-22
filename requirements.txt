@@ -10,6 +10,10 @@ pandas>=1.4.2,<2.0.0
 tensorflow-cpu>=2.10.0,<2.13.0  
 scikit-learn>=1.0.2,<1.3.0
 
+# PyTorch (강화학습 모델용)
+torch>=1.13.0,<2.0.0  # CPU 버전, stable release
+torchvision>=0.14.0,<0.16.0  # 필요시 비전 관련 기능 사용
+
 # 데이터 저장 및 처리
 h5py>=3.6.0,<3.10.0
 
