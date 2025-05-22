@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>신호 모니터링 - 적응형 신경 전기자극 시스템</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.0.0/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar">
+                <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark h-100">
+                    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                        <span class="fs-4">신경자극 시스템</span>
+                    </a>
+                    <hr>
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item">
+                            <a href="{{ url_for('index') }}" class="nav-link text-white">
+                                대시보드
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('monitoring') }}" class="nav-link active" aria-current="page">
+                                신호 모니터링
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('parameters') }}" class="nav-link text-white">
+                                자극 파라미터
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('analytics') }}" class="nav-link text-white">
+                                분석 및 보고서
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('settings') }}" class="nav-link text-white">
+                                시스템 설정
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 ms-sm-auto px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">신경 신호 모니터링</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" id="startStimBtn" class="btn btn-sm btn-outline-success">자극 시작</button>
+                            <button type="button" id="stopStimBtn" class="btn btn-sm btn-outline-danger" disabled>자극 중지</button>
+                        </div>
+                        <div class="btn-group me-2">
+                            <button type="button" id="recordBtn" class="btn btn-sm btn-outline-primary">기록 시작</button>
+                            <button type="button" id="saveRecordingBtn" class="btn btn-sm btn-outline-secondary" disabled>기록 저장</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signal Control Panel -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                신호 모니터링 설정
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="timeWindowSelect">시간 창:</label>
+                                            <select class="form-select" id="timeWindowSelect">
+                                                <option value="5">5초</option>
+                                                <option value="10" selected>10초</option>
+                                                <option value="30">30초</option>
+                                                <option value="60">1분</option>
+                                                <option value="300">5분</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="amplitudeScaleSelect">진폭 스케일:</label>
+                                            <select class="form-select" id="amplitudeScaleSelect">
+                                                <option value="0.5">0.5x</option>
+                                                <option value="1" selected>1x</option>
+                                                <option value="2">2x</option>
+                                                <option value="5">5x</option>
+                                                <option value="10">10x</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="filterTypeSelect">필터 유형:</label>
+                                            <select class="form-select" id="filterTypeSelect">
+                                                <option value="none">없음</option>
+                                                <option value="lowpass" selected>저역 통과</option>
+                                                <option value="highpass">고역 통과</option>
+                                                <option value="bandpass">대역 통과</option>
+                                                <option value="notch">노치 필터</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                            <label for="filterFreqInput">필터 주파수 (Hz):</label>
+                                            <input type="number" class="form-control" id="filterFreqInput" value="50">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full-width Signal Display -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>신경 신호 - 실시간 모니터링</span>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="autoScaleToggle" checked>
+                                    <label class="form-check-label" for="autoScaleToggle">자동 스케일</label>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="signal-container">
+                                    <canvas id="signalChartLarge" height="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Channel Controls and Individual Displays -->
+                <div class="row mb-4">
+                    <!-- Channel Selector Panel -->
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-header">
+                                채널 제어
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="channel1Check" checked>
+                                    <label class="form-check-label" for="channel1Check">
+                                        채널 1 <span class="badge bg-primary">수집 중</span>
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="channel2Check" checked>
+                                    <label class="form-check-label" for="channel2Check">
+                                        채널 2 <span class="badge bg-primary">수집 중</span>
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="channel3Check" checked>
+                                    <label class="form-check-label" for="channel3Check">
+                                        채널 3 <span class="badge bg-primary">수집 중</span>
+                                    </label>
+                                </div>
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="channel4Check" checked>
+                                    <label class="form-check-label" for="channel4Check">
+                                        채널 4 <span class="badge bg-primary">수집 중</span>
+                                    </label>
+                                </div>
+                                
+                                <button class="btn btn-sm btn-outline-primary w-100 mb-2">모든 채널 표시</button>
+                                <button class="btn btn-sm btn-outline-secondary w-100">모든 채널 숨기기</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Signal Statistics -->
+                    <div class="col-md-9">
+                        <div class="card">
+                            <div class="card-header">
+                                신호 통계 및 분석
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="stat-box">
+                                            <h6>RMS 값</h6>
+                                            <div class="row">
+                                                <div class="col-6">채널 1:</div>
+                                                <div class="col-6" id="rmsChannel1">0.54 µV</div>
+                                                <div class="col-6">채널 2:</div>
+                                                <div class="col-6" id="rmsChannel2">0.62 µV</div>
+                                                <div class="col-6">채널 3:</div>
+                                                <div class="col-6" id="rmsChannel3">0.48 µV</div>
+                                                <div class="col-6">채널 4:</div>
+                                                <div class="col-6" id="rmsChannel4">0.71 µV</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-box">
+                                            <h6>주요 주파수</h6>
+                                            <div class="row">
+                                                <div class="col-6">채널 1:</div>
+                                                <div class="col-6" id="freqChannel1">12.3 Hz</div>
+                                                <div class="col-6">채널 2:</div>
+                                                <div class="col-6" id="freqChannel2">15.7 Hz</div>
+                                                <div class="col-6">채널 3:</div>
+                                                <div class="col-6" id="freqChannel3">11.2 Hz</div>
+                                                <div class="col-6">채널 4:</div>
+                                                <div class="col-6" id="freqChannel4">14.5 Hz</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-box">
+                                            <h6>신호 대 잡음비</h6>
+                                            <div class="row">
+                                                <div class="col-6">채널 1:</div>
+                                                <div class="col-6" id="snrChannel1">8.4 dB</div>
+                                                <div class="col-6">채널 2:</div>
+                                                <div class="col-6" id="snrChannel2">7.8 dB</div>
+                                                <div class="col-6">채널 3:</div>
+                                                <div class="col-6" id="snrChannel3">9.2 dB</div>
+                                                <div class="col-6">채널 4:</div>
+                                                <div class="col-6" id="snrChannel4">8.1 dB</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="stat-box">
+                                            <h6>샘플 엔트로피</h6>
+                                            <div class="row">
+                                                <div class="col-6">채널 1:</div>
+                                                <div class="col-6" id="entropyChannel1">1.24</div>
+                                                <div class="col-6">채널 2:</div>
+                                                <div class="col-6" id="entropyChannel2">1.35</div>
+                                                <div class="col-6">채널 3:</div>
+                                                <div class="col-6" id="entropyChannel3">1.18</div>
+                                                <div class="col-6">채널 4:</div>
+                                                <div class="col-6" id="entropyChannel4">1.42</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spectral Analysis -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                주파수 스펙트럼 분석
+                            </div>
+                            <div class="card-body">
+                                <canvas id="spectrumChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                시간-주파수 분석 (스펙트로그램)
+                            </div>
+                            <div class="card-body">
+                                <canvas id="spectrogramChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Events and Annotations -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span>이벤트 및 주석</span>
+                                <button class="btn btn-sm btn-outline-primary" id="addEventBtn">이벤트 추가</button>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>시간</th>
+                                            <th>이벤트 타입</th>
+                                            <th>설명</th>
+                                            <th>액션</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="eventsTable">
+                                        <tr>
+                                            <td>10:15:32</td>
+                                            <td><span class="badge bg-info">자극 시작</span></td>
+                                            <td>초기 파라미터: 50Hz, 2.0mA</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary">보기</button>
+                                                <button class="btn btn-sm btn-outline-danger">삭제</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>10:17:45</td>
+                                            <td><span class="badge bg-warning">파라미터 변경</span></td>
+                                            <td>진폭을 2.5mA로 증가</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary">보기</button>
+                                                <button class="btn btn-sm btn-outline-danger">삭제</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventModalLabel">이벤트 추가</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="eventTypeSelect" class="form-label">이벤트 타입</label>
+                        <select class="form-select" id="eventTypeSelect">
+                            <option value="stimulation_start">자극 시작</option>
+                            <option value="stimulation_stop">자극 중지</option>
+                            <option value="parameter_change">파라미터 변경</option>
+                            <option value="observation">관찰 사항</option>
+                            <option value="artifact">아티팩트</option>
+                            <option value="custom">기타</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="eventDescription" class="form-label">설명</label>
+                        <textarea class="form-control" id="eventDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="saveEventBtn">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">© 2025 적응형 신경 전기자극 시스템</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/monitoring.js') }}"></script>
+</body>
+</html>
