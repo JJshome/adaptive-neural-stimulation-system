@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="500" fill="#f8f9fa" rx="15" ry="15" />
+  
+  <!-- Brain and Neural Network Visualization -->
+  <g>
+    <!-- Circular Brain Outline -->
+    <circle cx="400" cy="170" r="120" fill="#ffffff" stroke="#adb5bd" stroke-width="2" />
+    
+    <!-- Neural Network Nodes -->
+    <g id="nodes">
+      <!-- Central Node (Brain) -->
+      <circle cx="400" cy="170" r="40" fill="#6f42c1">
+        <animate attributeName="r" values="40;42;38;40" dur="3s" repeatCount="indefinite" />
+      </circle>
+      
+      <!-- Peripheral Nodes (Neurons) -->
+      <circle cx="270" cy="130" r="15" fill="#0d6efd">
+        <animate attributeName="r" values="15;18;14;15" dur="2.3s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#0d6efd;#20c997;#0d6efd" dur="5s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="320" cy="80" r="15" fill="#20c997">
+        <animate attributeName="r" values="15;17;13;15" dur="2.7s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#20c997;#0d6efd;#20c997" dur="4s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="420" cy="60" r="15" fill="#dc3545">
+        <animate attributeName="r" values="15;16;14;15" dur="3.1s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#dc3545;#fd7e14;#dc3545" dur="6s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="490" cy="100" r="15" fill="#fd7e14">
+        <animate attributeName="r" values="15;18;13;15" dur="2.5s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#fd7e14;#20c997;#fd7e14" dur="4.5s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="520" cy="180" r="15" fill="#0d6efd">
+        <animate attributeName="r" values="15;17;14;15" dur="2.9s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#0d6efd;#dc3545;#0d6efd" dur="5.5s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="480" cy="250" r="15" fill="#20c997">
+        <animate attributeName="r" values="15;16;13;15" dur="2.2s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#20c997;#fd7e14;#20c997" dur="4.7s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="400" cy="280" r="15" fill="#dc3545">
+        <animate attributeName="r" values="15;18;14;15" dur="3.3s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#dc3545;#0d6efd;#dc3545" dur="5.2s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="320" cy="260" r="15" fill="#fd7e14">
+        <animate attributeName="r" values="15;17;13;15" dur="2.8s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#fd7e14;#dc3545;#fd7e14" dur="4.3s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="270" cy="200" r="15" fill="#0d6efd">
+        <animate attributeName="r" values="15;16;14;15" dur="2.6s" repeatCount="indefinite" />
+        <animate attributeName="fill" values="#0d6efd;#20c997;#0d6efd" dur="5.7s" repeatCount="indefinite" />
+      </circle>
+    </g>
+    
+    <!-- Neural Network Connections -->
+    <g id="connections">
+      <!-- Connection Paths -->
+      <path d="M400,170 L270,130" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#0d6efd;#adb5bd" dur="2s" repeatCount="indefinite" />
+      </path>
+      
+      <path d="M400,170 L320,80" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#20c997;#adb5bd" dur="2.5s" repeatCount="indefinite" />
+      </path>
+      
+      <path d="M400,170 L420,60" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#dc3545;#adb5bd" dur="3s" repeatCount="indefinite" />
+      </path>
+      
+      <path d="M400,170 L490,100" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#fd7e14;#adb5bd" dur="2.3s" repeatCount="indefinite" />
+      </path>
+      
+      <path d="M400,170 L520,180" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#0d6efd;#adb5bd" dur="2.7s" repeatCount="indefinite" />
+      </path>
+      
+      <path d="M400,170 L480,250" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#20c997;#adb5bd" dur="3.2s" repeatCount="indefinite" />
+      </path>
+      
+      <path d="M400,170 L400,280" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#dc3545;#adb5bd" dur="2.2s" repeatCount="indefinite" />
+      </path>
+      
+      <path d="M400,170 L320,260" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#fd7e14;#adb5bd" dur="2.8s" repeatCount="indefinite" />
+      </path>
+      
+      <path d="M400,170 L270,200" stroke="#adb5bd" stroke-width="2" stroke-dasharray="3,3">
+        <animate attributeName="stroke" values="#adb5bd;#0d6efd;#adb5bd" dur="3.5s" repeatCount="indefinite" />
+      </path>
+      
+      <!-- Signal Pulses -->
+      <circle cx="0" cy="0" r="5" fill="#0d6efd">
+        <animateMotion path="M400,170 L270,130" dur="2s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="0" cy="0" r="5" fill="#20c997">
+        <animateMotion path="M400,170 L320,80" dur="2.5s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="0" cy="0" r="5" fill="#dc3545">
+        <animateMotion path="M400,170 L420,60" dur="3s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="0" cy="0" r="5" fill="#fd7e14">
+        <animateMotion path="M400,170 L490,100" dur="2.3s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="0" cy="0" r="5" fill="#0d6efd">
+        <animateMotion path="M400,170 L520,180" dur="2.7s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="0" cy="0" r="5" fill="#20c997">
+        <animateMotion path="M400,170 L480,250" dur="3.2s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="0" cy="0" r="5" fill="#dc3545">
+        <animateMotion path="M400,170 L400,280" dur="2.2s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="0" cy="0" r="5" fill="#fd7e14">
+        <animateMotion path="M400,170 L320,260" dur="2.8s" repeatCount="indefinite" />
+      </circle>
+      
+      <circle cx="0" cy="0" r="5" fill="#0d6efd">
+        <animateMotion path="M400,170 L270,200" dur="3.5s" repeatCount="indefinite" />
+      </circle>
+    </g>
+  </g>
+  
+  <!-- Recovery Metrics Visualization -->
+  <g transform="translate(0, 320)">
+    <!-- Title -->
+    <text x="400" y="30" font-family="Arial, sans-serif" font-size="18" fill="#212529" text-anchor="middle" font-weight="bold">신경 회복 지표</text>
+    
+    <!-- Progress Bars -->
+    <g transform="translate(150, 50)">
+      <!-- Axon Density -->
+      <text x="0" y="15" font-family="Arial, sans-serif" font-size="14" fill="#212529">축삭 밀도:</text>
+      <rect x="120" y="5" width="300" height="20" rx="5" ry="5" fill="#e9ecef" />
+      <rect x="120" y="5" width="0" height="20" rx="5" ry="5" fill="#0d6efd">
+        <animate attributeName="width" values="0;150;150" dur="3s" repeatCount="1" fill="freeze" />
+      </rect>
+      <text x="430" y="20" font-family="Arial, sans-serif" font-size="14" fill="#212529" text-anchor="end">50%</text>
+      
+      <!-- Conduction Velocity -->
+      <text x="0" y="45" font-family="Arial, sans-serif" font-size="14" fill="#212529">전도 속도:</text>
+      <rect x="120" y="35" width="300" height="20" rx="5" ry="5" fill="#e9ecef" />
+      <rect x="120" y="35" width="0" height="20" rx="5" ry="5" fill="#20c997">
+        <animate attributeName="width" values="0;120;120" dur="3s" repeatCount="1" fill="freeze" />
+      </rect>
+      <text x="430" y="50" font-family="Arial, sans-serif" font-size="14" fill="#212529" text-anchor="end">40%</text>
+      
+      <!-- Functional Recovery -->
+      <text x="0" y="75" font-family="Arial, sans-serif" font-size="14" fill="#212529">기능적 회복:</text>
+      <rect x="120" y="65" width="300" height="20" rx="5" ry="5" fill="#e9ecef" />
+      <rect x="120" y="65" width="0" height="20" rx="5" ry="5" fill="#fd7e14">
+        <animate attributeName="width" values="0;90;90" dur="3s" repeatCount="1" fill="freeze" />
+      </rect>
+      <text x="430" y="80" font-family="Arial, sans-serif" font-size="14" fill="#212529" text-anchor="end">30%</text>
+    </g>
+  </g>
+  
+  <!-- Title and Caption -->
+  <text x="400" y="480" font-family="Arial, sans-serif" font-size="16" fill="#212529" text-anchor="middle">적응형 신경 전기자극 시스템의 신경 네트워크 및 회복 지표 시각화</text>
+  
+  <!-- Animated Pulse Effect around Central Brain -->
+  <circle cx="400" cy="170" r="45" fill="none" stroke="#6f42c1" stroke-width="2">
+    <animate attributeName="r" values="45;70;100;130;160;190;220;250;280" dur="4s" repeatCount="indefinite" />
+    <animate attributeName="stroke-opacity" values="1;0.9;0.8;0.7;0.6;0.5;0.4;0.3;0.2;0.1;0" dur="4s" repeatCount="indefinite" />
+  </circle>
+</svg>
