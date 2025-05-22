@@ -2,6 +2,12 @@
 
 이 디렉토리는 적응형 신경 전기자극 시스템의 웹 인터페이스를 제공합니다. Flask 웹 프레임워크를 사용하여 구현되었으며, 실시간 신경 신호 시각화, 자극 파라미터 조정, 회복 지표 모니터링 등의 기능을 제공합니다.
 
+<div align="center">
+  <a href="static/img/dashboard_animation.svg">
+    <img src="static/img/dashboard_animation.svg" alt="실시간 신경 신호 모니터링 및 자극 파라미터 제어 인터페이스" width="700">
+  </a>
+</div>
+
 ## 주요 기능
 
 - **실시간 신호 시각화**: 다중 채널 신경 신호의 실시간 시각화
@@ -103,6 +109,16 @@ python app.py
 - `POST /api/stop-stimulation`: 자극 중지
 - `POST /api/save-settings`: 현재 설정 저장
 - `POST /api/load-settings`: 저장된 설정 불러오기
+
+## 신경 회복 지표 시각화
+
+적응형 신경 전기자극 시스템은 신경 회복 과정을 모니터링하기 위한 다양한 시각화 도구를 제공합니다. 아래 애니메이션은 신경 네트워크와 회복 지표의 시각화 예시를 보여줍니다:
+
+<div align="center">
+  <a href="static/img/neural_network_animation.svg">
+    <img src="static/img/neural_network_animation.svg" alt="신경 네트워크 및 회복 지표 시각화" width="700">
+  </a>
+</div>
 
 ## 특징 및 개선점
 
