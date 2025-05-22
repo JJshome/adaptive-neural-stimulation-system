@@ -1,0 +1,399 @@
+/* 
+   Main stylesheet for Adaptive Neural Stimulation System Web Interface
+*/
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #fff;
+}
+
+.sidebar .nav-link.active {
+    background-color: #0d6efd;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.main-content {
+    margin-left: 16.66666667%; /* Same as col-md-2 */
+    padding-top: 1.5rem;
+}
+
+/* Dashboard Cards */
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    font-weight: 600;
+}
+
+.status-card {
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.status-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Parameter Display */
+.param-display {
+    padding: 1rem 0;
+    text-align: center;
+}
+
+.param-value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+.param-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
+/* Metrics Display */
+.metric-container {
+    padding: 0.5rem;
+}
+
+.metric-container h5 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.progress {
+    height: 1.5rem;
+    font-size: 0.875rem;
+}
+
+/* Signal Chart Styles */
+.signal-container {
+    width: 100%;
+    position: relative;
+}
+
+/* Statistics Boxes */
+.stat-box {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    height: 100%;
+    font-size: 0.9rem;
+}
+
+.stat-box h6 {
+    color: #0d6efd;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+}
+
+/* Footer */
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    z-index: 99;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: static;
+        height: auto;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .param-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Channel control styles */
+.channel-control-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Event styling */
+.badge {
+    font-size: 0.75rem;
+    font-weight: normal;
+    padding: 0.35em 0.65em;
+}
+
+/* Animation for real-time data */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(13, 110, 253, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
+    }
+}
+
+.realtime-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    margin-right: 0.5rem;
+    animation: pulse 2s infinite;
+}
+
+/* Parameters Tab Styles */
+.parameter-slider {
+    padding: 1rem 0;
+}
+
+.parameter-slider .slider-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.parameter-slider .slider-value {
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+.parameter-slider .slider-unit {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Analytics Tab Styles */
+.analytics-card {
+    height: 100%;
+}
+
+.analytics-card .card-body {
+    padding: 1.5rem;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    background-color: #e9ecef;
+}
+
+.metric-card .metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0d6efd;
+    margin-bottom: 0.5rem;
+}
+
+.metric-card .metric-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* Settings Tab Styles */
+.settings-section {
+    margin-bottom: 2rem;
+}
+
+.settings-section h5 {
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Custom Toggle Switch */
+.custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.custom-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.custom-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.custom-switch input:checked + .slider {
+    background-color: #0d6efd;
+}
+
+.custom-switch input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Neural state indicators */
+.neural-state-indicator {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.neural-state-normal {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.neural-state-damaged {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.neural-state-recovery {
+    background-color: #fff3cd;
+    color: #664d03;
+}
+
+/* Time indicators */
+.time-display {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    background-color: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* Data recording indicator */
+.recording-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #dc3545;
+    margin-right: 0.5rem;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
+/* Protocol templates */
+.protocol-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.protocol-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.protocol-card.selected {
+    border: 2px solid #0d6efd;
+}
+
+/* Help tooltips */
+.help-icon {
+    color: #6c757d;
+    cursor: pointer;
+    margin-left: 0.25rem;
+}
+
+.help-icon:hover {
+    color: #0d6efd;
+}
+
+/* Data tables */
+.data-table {
+    font-size: 0.9rem;
+}
+
+.data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Print styles */
+@media print {
+    .sidebar, .footer, .btn, .form-select, .form-control {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+    
+    body {
+        background-color: white;
+    }
+}
