@@ -1,15 +1,11 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 신경 신호 샘플 데이터 생성 스크립트
 
-이 스크립트는 다양한 유형의 신경 신호 샘플을 생성하여 저장합니다.
-테스트 및 데모 목적으로 사용할 수 있는 가상 신경 데이터를 제공합니다.
-
-생성되는 샘플 데이터 유형:
-1. 정상 신경 신호: 일반적인 신경 활동을 모사한 신호
-2. 손상된 신경 신호: 손상된 신경의 감소된 활동을 모사한 신호
-3. 자극 반응 신호: 전기자극에 대한 신경 반응을 모사한 신호
-4. 잡음이 많은 신호: 다양한 노이즈 수준을 포함한 신호
-5. 다채널 신경 신호: 여러 전극에서 동시에 기록된 신호를 모사
+이 스크립트는 신경 전기자극 시스템 테스트 및 데모를 위한 합성 신경 신호 샘플을 생성합니다.
+다양한 신경 상태를 모사하는 1,000개 이상의 샘플을 생성합니다.
 """
 
 import os
@@ -18,389 +14,528 @@ import pandas as pd
 import h5py
 from scipy import signal
 import matplotlib.pyplot as plt
+from pathlib import Path
 
-# 데이터 저장 디렉토리
-SAVE_DIR = 'data/samples'
-os.makedirs(SAVE_DIR, exist_ok=True)
+# 상수 정의
+SAMPLING_RATE = 20000  # Hz
+DURATION = 1.0  # 초
+N_SAMPLES = int(SAMPLING_RATE * DURATION)
+TIME = np.linspace(0, DURATION, N_SAMPLES)
 
-# 샘플링 레이트 설정
-SAMPLING_RATE = 1000.0  # Hz
-DURATION = 10.0  # 초
-TIME = np.arange(0, DURATION, 1/SAMPLING_RATE)
-NUM_SAMPLES = len(TIME)
+# 저장 경로
+BASE_DIR = Path(__file__).parent
+SAMPLES_DIR = BASE_DIR / 'samples'
+NEURAL_RECORDINGS_DIR = BASE_DIR / 'neural_recordings'
+PROCESSED_DIR = BASE_DIR / 'processed'
 
-def generate_normal_signal():
-    """정상 신경 신호 생성"""
+# 디렉토리 생성
+for directory in [SAMPLES_DIR, NEURAL_RECORDINGS_DIR, PROCESSED_DIR]:
+    directory.mkdir(exist_ok=True)
+
+
+def generate_normal_signal(n_samples=N_SAMPLES, noise_level=0.1):
+    """
+    정상 신경 신호 생성
+    
+    Parameters:
+    - n_samples: 샘플 수
+    - noise_level: 노이즈 수준 (0-1)
+    
+    Returns:
+    - 정상 신경 신호
+    """
     # 기본 리듬 활동 (5-10Hz)
-    base_rhythm = 0.5 * np.sin(2 * np.pi * 8 * TIME)
+    t = np.arange(n_samples) / SAMPLING_RATE
+    base_rhythm = 0.5 * np.sin(2 * np.pi * 8 * t)
     
-    # 무작위 스파이크 생성
-    spikes = np.zeros(NUM_SAMPLES)
-    num_spikes = 20
-    spike_indices = np.random.choice(NUM_SAMPLES, num_spikes, replace=False)
+    # 랜덤 스파이크 추가
+    n_spikes = int(n_samples * 0.01)  # 샘플의 약 1%에 스파이크
+    spike_indices = np.random.choice(n_samples, n_spikes, replace=False)
+    spikes = np.zeros(n_samples)
     for idx in spike_indices:
-        # 스파이크 모양 (간단한 가우시안 펄스)
-        width = int(0.002 * SAMPLING_RATE)  # 2ms 너비
-        t = np.arange(-width, width)
-        spike = 2.0 * np.exp(-(t**2) / (2 * (width/5)**2))
-        
-        # 스파이크 추가 (경계 확인)
-        start = max(0, idx - width)
-        end = min(NUM_SAMPLES, idx + width)
-        s_start = max(0, width - idx)
-        s_end = min(2 * width, width + (NUM_SAMPLES - idx))
-        spikes[start:end] += spike[s_start:s_end]
-    
-    # 리듬과 스파이크 결합
-    signal = base_rhythm + spikes
+        # 스파이크 모양: 빠른 상승, 천천히 감소
+        if idx < n_samples - 20:
+            spikes[idx:idx+20] += np.exp(-np.arange(20)/5)
     
     # 배경 노이즈 추가
-    noise = 0.1 * np.random.randn(NUM_SAMPLES)
-    signal += noise
+    noise = noise_level * np.random.randn(n_samples)
     
-    return signal
+    # 신호 조합
+    normal_signal = base_rhythm + spikes + noise
+    
+    # 정규화
+    normal_signal = (normal_signal - normal_signal.min()) / (normal_signal.max() - normal_signal.min())
+    return normal_signal
 
-def generate_damaged_signal():
-    """손상된 신경 신호 생성"""
-    # 감소된 리듬 활동 (불규칙)
-    base_rhythm = 0.3 * np.sin(2 * np.pi * 6 * TIME) * (0.5 + 0.5 * np.sin(2 * np.pi * 0.2 * TIME))
+
+def generate_damaged_signal(n_samples=N_SAMPLES, damage_level=0.6):
+    """
+    손상된 신경 신호 생성
     
-    # 더 적은 스파이크
-    spikes = np.zeros(NUM_SAMPLES)
-    num_spikes = 8  # 정상보다 적은 수
-    spike_indices = np.random.choice(NUM_SAMPLES, num_spikes, replace=False)
+    Parameters:
+    - n_samples: 샘플 수
+    - damage_level: 손상 수준 (0-1)
+    
+    Returns:
+    - 손상된 신경 신호
+    """
+    # 감소된 기본 리듬 활동
+    t = np.arange(n_samples) / SAMPLING_RATE
+    base_rhythm = 0.2 * np.sin(2 * np.pi * 5 * t)
+    
+    # 활동 중단 구간 추가
+    silent_start = int(n_samples * 0.3)
+    silent_end = int(n_samples * (0.3 + damage_level * 0.4))
+    activity_mask = np.ones(n_samples)
+    activity_mask[silent_start:silent_end] = 0.2
+    
+    # 더 적은 랜덤 스파이크 추가
+    n_spikes = int(n_samples * 0.005)  # 정상의 절반
+    spike_indices = np.random.choice(n_samples, n_spikes, replace=False)
+    spikes = np.zeros(n_samples)
     for idx in spike_indices:
-        width = int(0.002 * SAMPLING_RATE)
-        t = np.arange(-width, width)
-        spike = 1.5 * np.exp(-(t**2) / (2 * (width/5)**2))  # 정상보다 진폭 감소
-        
-        start = max(0, idx - width)
-        end = min(NUM_SAMPLES, idx + width)
-        s_start = max(0, width - idx)
-        s_end = min(2 * width, width + (NUM_SAMPLES - idx))
-        spikes[start:end] += spike[s_start:s_end]
+        if idx < n_samples - 20:
+            spikes[idx:idx+20] += 0.6 * np.exp(-np.arange(20)/5)  # 감소된 진폭
     
-    # 특정 구간에서 활동 중단 모사
-    dead_zone_start = int(0.3 * NUM_SAMPLES)
-    dead_zone_end = int(0.5 * NUM_SAMPLES)
-    signal = base_rhythm + spikes
-    signal[dead_zone_start:dead_zone_end] *= 0.2
+    # 더 높은 노이즈 수준
+    noise = 0.2 * np.random.randn(n_samples)
     
-    # 더 많은 노이즈 추가
-    noise = 0.2 * np.random.randn(NUM_SAMPLES)
-    signal += noise
+    # 신호 조합
+    damaged_signal = (base_rhythm + spikes) * activity_mask + noise
     
-    return signal
+    # 정규화
+    damaged_signal = (damaged_signal - damaged_signal.min()) / (damaged_signal.max() - damaged_signal.min())
+    return damaged_signal
 
-def generate_stimulation_response():
-    """자극 반응 신호 생성"""
-    # 기본 신호
-    base_signal = 0.3 * np.sin(2 * np.pi * 7 * TIME)
+
+def generate_stimulation_response(n_samples=N_SAMPLES, stim_frequency=50):
+    """
+    전기자극 반응 신호 생성
     
-    # 자극 시점
-    stim_times = [1.0, 3.0, 5.0, 7.0, 9.0]  # 초
-    stim_indices = [int(t * SAMPLING_RATE) for t in stim_times]
+    Parameters:
+    - n_samples: 샘플 수
+    - stim_frequency: 자극 주파수 (Hz)
     
-    # 자극 아티팩트 및 반응 생성
-    signal = base_signal.copy()
+    Returns:
+    - 자극 반응 신호
+    """
+    t = np.arange(n_samples) / SAMPLING_RATE
+    
+    # 자극 아티팩트 생성 (일정한 간격으로 발생하는 짧은 펄스)
+    stim_interval = SAMPLING_RATE / stim_frequency
+    stim_indices = np.arange(0, n_samples, int(stim_interval))
+    stim_artifact = np.zeros(n_samples)
+    
     for idx in stim_indices:
-        # 자극 아티팩트 (큰 스파이크)
-        artifact_width = int(0.01 * SAMPLING_RATE)  # 10ms
-        signal[idx:idx+artifact_width] += 3.0 * np.exp(-np.arange(artifact_width) / (artifact_width/5))
-        
-        # 자극 후 반응 (증가된 활동)
-        response_start = idx + artifact_width
-        response_duration = int(0.3 * SAMPLING_RATE)  # 300ms
-        response_end = min(NUM_SAMPLES, response_start + response_duration)
-        
-        # 증가된 스파이크 활동
-        num_response_spikes = 10
-        response_indices = response_start + np.random.randint(0, response_duration, num_response_spikes)
-        for r_idx in response_indices:
-            if r_idx < NUM_SAMPLES:
-                width = int(0.002 * SAMPLING_RATE)
-                t = np.arange(-width, width)
-                spike = 1.8 * np.exp(-(t**2) / (2 * (width/5)**2))
-                
-                r_start = max(0, r_idx - width)
-                r_end = min(NUM_SAMPLES, r_idx + width)
-                s_start = max(0, width - (r_idx - r_start))
-                s_end = min(2 * width, width + (r_end - r_idx))
-                signal[r_start:r_end] += spike[s_start:s_end]
+        if idx < n_samples - 10:
+            # 자극 아티팩트 모양: 빠른 상승, 빠른 하강, 약간의 반동
+            stim_artifact[idx:idx+10] += np.array([0, 1, 0.8, -0.5, -0.3, -0.1, 0, 0, 0, 0])
     
-    # 노이즈 추가
-    noise = 0.15 * np.random.randn(NUM_SAMPLES)
-    signal += noise
+    # 자극 후 신경 활동 증가 (각 자극 후 발생)
+    post_stim_response = np.zeros(n_samples)
+    for idx in stim_indices:
+        if idx < n_samples - 100:
+            # 자극 후 20ms 지연된 반응, 약 80ms 지속
+            response_start = idx + 20
+            response = 0.5 * np.exp(-np.arange(80)/20) * np.sin(2 * np.pi * 20 * np.arange(80) / SAMPLING_RATE)
+            post_stim_response[response_start:response_start+80] += response
     
-    return signal
+    # 기본 신경 활동 및 노이즈
+    base_activity = 0.3 * np.sin(2 * np.pi * 7 * t)
+    noise = 0.1 * np.random.randn(n_samples)
+    
+    # 신호 조합
+    stim_response = stim_artifact + post_stim_response + base_activity + noise
+    
+    # 정규화
+    stim_response = (stim_response - stim_response.min()) / (stim_response.max() - stim_response.min())
+    return stim_response
 
-def generate_noisy_signal():
-    """다양한 노이즈 수준을 가진 신호 생성"""
-    # 기본 신경 신호
-    base_signal = generate_normal_signal()
+
+def generate_noisy_signal(n_samples=N_SAMPLES):
+    """
+    잡음이 많은 신호 생성
+    
+    Parameters:
+    - n_samples: 샘플 수
+    
+    Returns:
+    - 잡음이 많은 신호
+    """
+    t = np.arange(n_samples) / SAMPLING_RATE
+    
+    # 기본 신호
+    base_signal = 0.4 * np.sin(2 * np.pi * 6 * t)
     
     # 전원선 노이즈 (60Hz)
-    power_noise = 0.5 * np.sin(2 * np.pi * 60 * TIME)
+    powerline_noise = 0.2 * np.sin(2 * np.pi * 60 * t)
     
     # 고주파 노이즈
-    high_freq_noise = 0.3 * np.sin(2 * np.pi * 200 * TIME)
+    high_freq_noise = 0.15 * np.sin(2 * np.pi * 200 * t) + 0.1 * np.sin(2 * np.pi * 300 * t)
     
     # 저주파 드리프트
-    drift = 0.5 * np.sin(2 * np.pi * 0.1 * TIME)
+    drift = 0.3 * np.sin(2 * np.pi * 0.2 * t)
     
-    # 구간별 다른 노이즈 수준
-    signal = base_signal.copy()
+    # 임의 노이즈
+    random_noise = 0.2 * np.random.randn(n_samples)
     
-    # 구간 1: 기본 노이즈
-    signal[:int(0.2 * NUM_SAMPLES)] += 0.2 * np.random.randn(int(0.2 * NUM_SAMPLES))
+    # 노이즈 특성이 다른 구간
+    noise_mask = np.ones((3, n_samples))
+    segment_length = n_samples // 3
+    noise_mask[0, segment_length:] = 0  # 첫 구간: 전원선 노이즈 집중
+    noise_mask[1, :segment_length] = 0
+    noise_mask[1, 2*segment_length:] = 0  # 두번째 구간: 고주파 노이즈 집중
+    noise_mask[2, :2*segment_length] = 0  # 세번째 구간: 저주파 드리프트 집중
     
-    # 구간 2: 전원선 노이즈 추가
-    signal[int(0.2 * NUM_SAMPLES):int(0.4 * NUM_SAMPLES)] += power_noise[int(0.2 * NUM_SAMPLES):int(0.4 * NUM_SAMPLES)]
+    # 신호 조합
+    noisy_signal = base_signal + \
+                  powerline_noise * noise_mask[0] + \
+                  high_freq_noise * noise_mask[1] + \
+                  drift * noise_mask[2] + \
+                  random_noise
     
-    # 구간 3: 전원선 + 고주파 노이즈
-    signal[int(0.4 * NUM_SAMPLES):int(0.6 * NUM_SAMPLES)] += power_noise[int(0.4 * NUM_SAMPLES):int(0.6 * NUM_SAMPLES)]
-    signal[int(0.4 * NUM_SAMPLES):int(0.6 * NUM_SAMPLES)] += high_freq_noise[int(0.4 * NUM_SAMPLES):int(0.6 * NUM_SAMPLES)]
-    
-    # 구간 4: 모든 노이즈 유형
-    signal[int(0.6 * NUM_SAMPLES):int(0.8 * NUM_SAMPLES)] += power_noise[int(0.6 * NUM_SAMPLES):int(0.8 * NUM_SAMPLES)]
-    signal[int(0.6 * NUM_SAMPLES):int(0.8 * NUM_SAMPLES)] += high_freq_noise[int(0.6 * NUM_SAMPLES):int(0.8 * NUM_SAMPLES)]
-    signal[int(0.6 * NUM_SAMPLES):int(0.8 * NUM_SAMPLES)] += drift[int(0.6 * NUM_SAMPLES):int(0.8 * NUM_SAMPLES)]
-    
-    # 구간 5: 매우 높은 노이즈 수준
-    signal[int(0.8 * NUM_SAMPLES):] += power_noise[int(0.8 * NUM_SAMPLES):]
-    signal[int(0.8 * NUM_SAMPLES):] += high_freq_noise[int(0.8 * NUM_SAMPLES):]
-    signal[int(0.8 * NUM_SAMPLES):] += drift[int(0.8 * NUM_SAMPLES):]
-    signal[int(0.8 * NUM_SAMPLES):] += 0.5 * np.random.randn(NUM_SAMPLES - int(0.8 * NUM_SAMPLES))
-    
-    return signal
+    # 정규화
+    noisy_signal = (noisy_signal - noisy_signal.min()) / (noisy_signal.max() - noisy_signal.min())
+    return noisy_signal
 
-def generate_multichannel_signal(num_channels=4):
-    """다채널 신경 신호 생성"""
-    # 기본 리듬 (모든 채널에 공통)
-    base_rhythm = 0.3 * np.sin(2 * np.pi * 8 * TIME)
+
+def generate_multichannel_signal(n_samples=N_SAMPLES, n_channels=16):
+    """
+    다채널 신경 신호 생성
     
-    # 채널별 신호 생성
-    channels = []
-    for ch in range(num_channels):
-        # 채널별 고유 리듬 추가
-        channel_rhythm = base_rhythm + 0.2 * np.sin(2 * np.pi * (5 + ch * 2) * TIME)
+    Parameters:
+    - n_samples: 샘플 수
+    - n_channels: 채널 수
+    
+    Returns:
+    - 다채널 신경 신호 (채널 수 x 샘플 수)
+    """
+    t = np.arange(n_samples) / SAMPLING_RATE
+    
+    # 공통 리듬 활동 (모든 채널에 영향)
+    common_rhythm = 0.3 * np.sin(2 * np.pi * 8 * t)
+    
+    # 채널별 데이터 생성
+    multichannel_data = np.zeros((n_channels, n_samples))
+    
+    for ch in range(n_channels):
+        # 채널별 고유 리듬 (약간 다른 주파수)
+        ch_freq = 5 + ch * 0.5  # 5-12.5 Hz
+        ch_rhythm = 0.2 * np.sin(2 * np.pi * ch_freq * t + np.random.rand() * 2 * np.pi)
         
-        # 채널별 스파이크 생성
-        spikes = np.zeros(NUM_SAMPLES)
-        num_spikes = 15 + ch * 2  # 채널마다 다른 수의 스파이크
-        spike_indices = np.random.choice(NUM_SAMPLES, num_spikes, replace=False)
+        # 채널별 스파이크 패턴
+        n_spikes = int(n_samples * 0.005) + int(n_samples * 0.01 * np.random.rand())  # 채널별 다른 스파이크 수
+        spike_indices = np.random.choice(n_samples, n_spikes, replace=False)
+        spikes = np.zeros(n_samples)
         for idx in spike_indices:
-            width = int(0.002 * SAMPLING_RATE)
-            t = np.arange(-width, width)
-            spike = (1.0 + 0.2 * ch) * np.exp(-(t**2) / (2 * (width/5)**2))  # 채널마다 다른 진폭
-            
-            start = max(0, idx - width)
-            end = min(NUM_SAMPLES, idx + width)
-            s_start = max(0, width - idx)
-            s_end = min(2 * width, width + (NUM_SAMPLES - idx))
-            spikes[start:end] += spike[s_start:s_end]
+            if idx < n_samples - 20:
+                spikes[idx:idx+20] += (0.5 + 0.5 * np.random.rand()) * np.exp(-np.arange(20)/5)
         
-        # 채널별 노이즈 추가
-        noise = (0.1 + 0.02 * ch) * np.random.randn(NUM_SAMPLES)  # 채널마다 다른 노이즈 수준
+        # 채널별 노이즈 수준
+        noise_level = 0.05 + 0.15 * np.random.rand()  # 0.05-0.2 범위의 노이즈
+        noise = noise_level * np.random.randn(n_samples)
         
-        # 최종 채널 신호
-        channel_signal = channel_rhythm + spikes + noise
-        channels.append(channel_signal)
+        # 채널 신호 조합
+        ch_signal = common_rhythm + ch_rhythm + spikes + noise
+        
+        # 정규화
+        ch_signal = (ch_signal - ch_signal.min()) / (ch_signal.max() - ch_signal.min())
+        multichannel_data[ch] = ch_signal
     
-    return np.array(channels)
+    return multichannel_data
 
-def save_as_csv(signal, filename, multichannel=False):
-    """신호를 CSV 형식으로 저장"""
+
+def save_signal_as_csv(signal, filename, multichannel=False):
+    """
+    신호를 CSV 파일로 저장
+    
+    Parameters:
+    - signal: 저장할 신호 데이터
+    - filename: 파일 이름
+    - multichannel: 다채널 신호 여부
+    """
     if multichannel:
         # 다채널 신호
-        df = pd.DataFrame({
-            'time': TIME
-        })
-        for i in range(signal.shape[0]):
-            df[f'channel_{i+1}'] = signal[i, :]
+        n_channels, n_samples = signal.shape
+        df = pd.DataFrame(signal.T, columns=[f'channel_{i+1}' for i in range(n_channels)])
+        df.insert(0, 'time', np.arange(n_samples) / SAMPLING_RATE)
     else:
         # 단일 채널 신호
         df = pd.DataFrame({
-            'time': TIME,
-            'signal': signal
+            'time': np.arange(len(signal)) / SAMPLING_RATE,
+            'amplitude': signal
         })
     
-    df.to_csv(os.path.join(SAVE_DIR, filename), index=False)
-    print(f"CSV 파일 저장됨: {filename}")
+    df.to_csv(filename, index=False)
+    print(f"저장 완료: {filename}")
 
-def save_as_npy(signal, filename):
-    """신호를 NumPy 배열로 저장"""
-    np.save(os.path.join(SAVE_DIR, filename), signal)
-    print(f"NPY 파일 저장됨: {filename}")
 
-def save_as_hdf5(signal, filename, sampling_rate=SAMPLING_RATE, multichannel=False):
-    """신호를 HDF5 형식으로 저장"""
-    with h5py.File(os.path.join(SAVE_DIR, filename), 'w') as f:
-        if multichannel:
-            # 다채널 데이터
-            f.create_dataset('data', data=signal)
-        else:
-            # 단일 채널 데이터
-            f.create_dataset('data', data=signal.reshape(1, -1))
-            
-        # 메타데이터 추가
-        f.attrs['sampling_rate'] = sampling_rate
+def save_signal_as_npy(signal, filename):
+    """
+    신호를 NumPy 배열로 저장
+    
+    Parameters:
+    - signal: 저장할 신호 데이터
+    - filename: 파일 이름
+    """
+    np.save(filename, signal)
+    print(f"저장 완료: {filename}")
+
+
+def save_signal_as_h5(signal, filename, attrs=None, multichannel=False):
+    """
+    신호를 HDF5 파일로 저장
+    
+    Parameters:
+    - signal: 저장할 신호 데이터
+    - filename: 파일 이름
+    - attrs: 메타데이터 사전 (기본값: None)
+    - multichannel: 다채널 신호 여부
+    """
+    if attrs is None:
+        attrs = {}
+    
+    with h5py.File(filename, 'w') as f:
+        # 데이터 저장
+        f.create_dataset('data', data=signal)
+        
+        # 기본 메타데이터 추가
+        f.attrs['sampling_rate'] = SAMPLING_RATE
         f.attrs['duration'] = DURATION
-        f.attrs['num_samples'] = NUM_SAMPLES
         
         if multichannel:
-            f.attrs['num_channels'] = signal.shape[0]
-        else:
-            f.attrs['num_channels'] = 1
+            f.attrs['n_channels'] = signal.shape[0]
+        
+        # 추가 메타데이터 저장
+        for key, value in attrs.items():
+            f.attrs[key] = value
     
-    print(f"HDF5 파일 저장됨: {filename}")
+    print(f"저장 완료: {filename}")
 
-def plot_and_save_figure(signals, titles, filename):
-    """신호 시각화 및 그림 저장"""
-    n = len(signals)
-    fig, axs = plt.subplots(n, 1, figsize=(10, 2 * n), sharex=True)
+
+def generate_and_save_sample_set(set_name, n_samples=1000, output_dir=None):
+    """
+    샘플 세트 생성 및 저장
     
-    if n == 1:
-        axs = [axs]  # 단일 신호인 경우 리스트로 변환
+    Parameters:
+    - set_name: 샘플 세트 이름 (normal, damaged, 등)
+    - n_samples: 생성할 샘플 수
+    - output_dir: 출력 디렉토리 (기본값: neural_recordings)
+    """
+    if output_dir is None:
+        output_dir = NEURAL_RECORDINGS_DIR
     
-    for i, (signal, title) in enumerate(zip(signals, titles)):
-        if len(signal.shape) > 1:
-            # 다채널 신호
-            for ch in range(signal.shape[0]):
-                axs[i].plot(TIME, signal[ch], label=f'Channel {ch+1}')
-            axs[i].legend()
-        else:
-            # 단일 채널 신호
-            axs[i].plot(TIME, signal)
-            
-        axs[i].set_title(title)
-        axs[i].set_ylabel('Amplitude')
-        axs[i].grid(True)
+    # 출력 디렉토리 생성
+    os.makedirs(output_dir, exist_ok=True)
     
-    axs[-1].set_xlabel('Time (s)')
-    plt.tight_layout()
+    # 생성 함수 선택
+    if set_name == 'normal':
+        generator = generate_normal_signal
+        params = [{'noise_level': 0.05 + 0.15 * np.random.rand()} for _ in range(n_samples)]
+    elif set_name == 'damaged':
+        generator = generate_damaged_signal
+        params = [{'damage_level': 0.4 + 0.5 * np.random.rand()} for _ in range(n_samples)]
+    elif set_name == 'stimulation':
+        generator = generate_stimulation_response
+        params = [{'stim_frequency': 20 + 80 * np.random.rand()} for _ in range(n_samples)]
+    elif set_name == 'noisy':
+        generator = generate_noisy_signal
+        params = [{}] * n_samples
+    else:
+        print(f"알 수 없는 샘플 세트 이름: {set_name}")
+        return
     
-    # 그림 저장
-    plt.savefig(os.path.join(SAVE_DIR, filename), dpi=300, bbox_inches='tight')
-    print(f"그림 파일 저장됨: {filename}")
-    plt.close()
+    # 샘플 생성 및 저장
+    for i in range(n_samples):
+        # 신호 생성
+        signal = generator(**params[i])
+        
+        # 파일 이름 생성
+        base_filename = f"{set_name}_signal_{i+1:04d}"
+        csv_filename = os.path.join(output_dir, f"{base_filename}.csv")
+        npy_filename = os.path.join(output_dir, f"{base_filename}.npy")
+        h5_filename = os.path.join(output_dir, f"{base_filename}.h5")
+        
+        # 다양한 형식으로 저장
+        save_signal_as_csv(signal, csv_filename)
+        save_signal_as_npy(signal, npy_filename)
+        save_signal_as_h5(signal, h5_filename, attrs=params[i])
+        
+        # 진행 상황 표시
+        if (i+1) % 100 == 0 or i+1 == n_samples:
+            print(f"{set_name} 샘플 생성 진행률: {i+1}/{n_samples}")
 
-def create_data_description():
-    """샘플 데이터 설명 파일 생성"""
-    description = """# 신경 신호 샘플 데이터 설명
 
-이 디렉토리에는 신경 전기자극 시스템 테스트 및 데모를 위한 가상 신경 신호 샘플이 포함되어 있습니다.
-
-## 데이터 형식
-
-샘플 데이터는 다음 형식으로 제공됩니다:
-- CSV 파일 (.csv): 시간 열과 신호 열을 포함하는 표 형식
-- NumPy 배열 (.npy): 원시 신호 데이터를 포함하는 NumPy 배열
-- HDF5 파일 (.h5): 신호 데이터와 메타데이터(샘플링 레이트, 채널 수 등)를 포함하는 계층적 데이터 형식
-
-## 데이터 유형
-
-1. **정상 신경 신호 (normal_signal)**
-   - 정상적인 신경 활동을 모사한 신호
-   - 기본 리듬 활동(5-10Hz)과 무작위 스파이크를 포함
-   - 약간의 배경 노이즈 포함
-
-2. **손상된 신경 신호 (damaged_signal)**
-   - 손상된 신경의 감소된 활동을 모사한 신호
-   - 감소된 리듬 활동과 더 적은 스파이크
-   - 특정 구간에서의 활동 중단 포함
-   - 더 높은 노이즈 수준
-
-3. **자극 반응 신호 (stimulation_response)**
-   - 전기자극에 대한 신경 반응을 모사한 신호
-   - 자극 아티팩트와 후속 활동 증가를 포함
-   - 주기적인 자극 패턴
-
-4. **잡음이 많은 신호 (noisy_signal)**
-   - 다양한 노이즈 유형과 수준을 포함한 신호
-   - 전원선 노이즈(60Hz), 고주파 노이즈, 저주파 드리프트 등
-   - 구간별로 다른 노이즈 특성
-
-5. **다채널 신경 신호 (multichannel_signal)**
-   - 여러 전극에서 동시에 기록된 신호를 모사
-   - 채널 간 공통 리듬과 채널별 고유 특성 포함
-   - 채널별로 다른 스파이크 패턴과 노이즈 수준
-
-## 사용 방법
-
-이 샘플 데이터는 다음과 같은 용도로 사용할 수 있습니다:
-- 신호 처리 알고리즘 테스트
-- 특성 추출 및 분석 기능 검증
-- 자극 최적화 알고리즘 평가
-- 시각화 및 데모 목적
-
-## 참고 사항
-
-이 데이터는 실제 신경 신호를 모사한 가상 데이터로, 교육 및 개발 목적으로만 사용해야 합니다.
-실제 임상 응용에는 적합하지 않습니다.
-
-샘플링 레이트: {0} Hz
-신호 길이: {1} 초
-샘플 수: {2}
-""".format(SAMPLING_RATE, DURATION, NUM_SAMPLES)
-
-    with open(os.path.join(SAVE_DIR, 'README.md'), 'w') as f:
-        f.write(description)
+def generate_multichannel_sample_set(n_samples=50, output_dir=None):
+    """
+    다채널 샘플 세트 생성 및 저장
     
-    print("데이터 설명 파일 생성됨: README.md")
+    Parameters:
+    - n_samples: 생성할 샘플 수
+    - output_dir: 출력 디렉토리 (기본값: neural_recordings)
+    """
+    if output_dir is None:
+        output_dir = NEURAL_RECORDINGS_DIR
+    
+    # 출력 디렉토리 생성
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # 샘플 생성 및 저장
+    for i in range(n_samples):
+        # 채널 수 변경 (8-32 채널)
+        n_channels = np.random.choice([8, 16, 24, 32])
+        
+        # 다채널 신호 생성
+        signal = generate_multichannel_signal(n_channels=n_channels)
+        
+        # 파일 이름 생성
+        base_filename = f"multichannel_signal_{i+1:04d}"
+        csv_filename = os.path.join(output_dir, f"{base_filename}.csv")
+        npy_filename = os.path.join(output_dir, f"{base_filename}.npy")
+        h5_filename = os.path.join(output_dir, f"{base_filename}.h5")
+        
+        # 다양한 형식으로 저장
+        save_signal_as_csv(signal, csv_filename, multichannel=True)
+        save_signal_as_npy(signal, npy_filename)
+        save_signal_as_h5(signal, h5_filename, attrs={'n_channels': n_channels}, multichannel=True)
+        
+        # 진행 상황 표시
+        if (i+1) % 10 == 0 or i+1 == n_samples:
+            print(f"다채널 샘플 생성 진행률: {i+1}/{n_samples}")
+
+
+def generate_basic_sample_set():
+    """
+    기본 샘플 세트 생성 및 저장 (samples 디렉토리)
+    """
+    # 신호 생성
+    normal_signal = generate_normal_signal()
+    damaged_signal = generate_damaged_signal()
+    stim_response = generate_stimulation_response()
+    noisy_signal = generate_noisy_signal()
+    multichannel_signal = generate_multichannel_signal(n_channels=5)  # 5채널로 제한하여 CSV 크기 감소
+    
+    # 기본 샘플 저장 (samples 디렉토리)
+    save_signal_as_csv(normal_signal, SAMPLES_DIR / 'normal_signal.csv')
+    save_signal_as_csv(damaged_signal, SAMPLES_DIR / 'damaged_signal.csv')
+    save_signal_as_csv(stim_response, SAMPLES_DIR / 'stimulation_response.csv')
+    save_signal_as_csv(noisy_signal, SAMPLES_DIR / 'noisy_signal.csv')
+    save_signal_as_csv(multichannel_signal, SAMPLES_DIR / 'multichannel_signal.csv', multichannel=True)
+
+
+def generate_processed_samples(n_samples=200):
+    """
+    처리된 샘플 데이터 생성 (전처리된 특성 추출 결과)
+    
+    Parameters:
+    - n_samples: 생성할 샘플 수
+    """
+    # 출력 디렉토리 생성
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    
+    # 특성 이름 정의
+    features = [
+        'mean', 'std', 'rms', 'zero_crossing_rate', 'peak_count',
+        'power_low', 'power_medium', 'power_high',
+        'wavelet_coef_1', 'wavelet_coef_2', 'wavelet_coef_3', 'wavelet_coef_4', 'wavelet_coef_5',
+        'entropy', 'sample_entropy', 'lyapunov_exp'
+    ]
+    
+    # 레이블 정의
+    labels = ['normal', 'damaged', 'recovering', 'stimulated']
+    
+    # 데이터 프레임 생성을 위한 데이터 준비
+    data = []
+    
+    for i in range(n_samples):
+        # 랜덤 레이블 할당
+        label = np.random.choice(labels)
+        
+        # 레이블에 따라 특성값 생성 (실제 시스템에서는 신호 처리로 계산됨)
+        if label == 'normal':
+            feature_values = np.random.normal(0.7, 0.1, len(features))
+        elif label == 'damaged':
+            feature_values = np.random.normal(0.3, 0.15, len(features))
+        elif label == 'recovering':
+            feature_values = np.random.normal(0.5, 0.2, len(features))
+        else:  # 'stimulated'
+            feature_values = np.random.normal(0.8, 0.1, len(features))
+        
+        # 0-1 사이로 제한
+        feature_values = np.clip(feature_values, 0, 1)
+        
+        # 특성값 딕셔너리 생성
+        sample = {feature: value for feature, value in zip(features, feature_values)}
+        sample['label'] = label
+        sample['sample_id'] = f'sample_{i+1:04d}'
+        
+        data.append(sample)
+    
+    # 데이터프레임 생성
+    df = pd.DataFrame(data)
+    
+    # 파일로 저장
+    csv_filename = os.path.join(PROCESSED_DIR, f"processed_features_{n_samples}.csv")
+    h5_filename = os.path.join(PROCESSED_DIR, f"processed_features_{n_samples}.h5")
+    
+    df.to_csv(csv_filename, index=False)
+    
+    with h5py.File(h5_filename, 'w') as f:
+        # 특성 데이터 저장
+        feature_data = df[features].values
+        f.create_dataset('features', data=feature_data)
+        
+        # 레이블 저장 (숫자로 변환)
+        label_map = {label: i for i, label in enumerate(labels)}
+        label_data = np.array([label_map[l] for l in df['label']])
+        f.create_dataset('labels', data=label_data)
+        
+        # 샘플 ID 저장
+        sample_ids = df['sample_id'].values
+        dt = h5py.special_dtype(vlen=str)
+        sample_id_dataset = f.create_dataset('sample_ids', (len(sample_ids),), dtype=dt)
+        for i, sample_id in enumerate(sample_ids):
+            sample_id_dataset[i] = sample_id
+        
+        # 메타데이터 추가
+        f.attrs['feature_names'] = np.array(features, dtype=dt)
+        f.attrs['label_names'] = np.array(labels, dtype=dt)
+    
+    print(f"처리된 샘플 저장 완료: {csv_filename}, {h5_filename}")
+
 
 def main():
-    """샘플 데이터 생성 및 저장 메인 함수"""
-    print("신경 신호 샘플 데이터 생성 중...")
+    """
+    모든 샘플 데이터 생성
+    """
+    print("신경 신호 샘플 데이터 생성 시작...")
     
-    # 정상 신경 신호
-    normal_signal = generate_normal_signal()
-    save_as_csv(normal_signal, 'normal_signal.csv')
-    save_as_npy(normal_signal, 'normal_signal.npy')
-    save_as_hdf5(normal_signal, 'normal_signal.h5')
+    # 기본 샘플 생성 (samples 디렉토리)
+    print("\n기본 샘플 세트 생성...")
+    generate_basic_sample_set()
     
-    # 손상된 신경 신호
-    damaged_signal = generate_damaged_signal()
-    save_as_csv(damaged_signal, 'damaged_signal.csv')
-    save_as_npy(damaged_signal, 'damaged_signal.npy')
-    save_as_hdf5(damaged_signal, 'damaged_signal.h5')
+    # 대량 샘플 생성 (neural_recordings 디렉토리)
+    print("\n정상 신경 신호 샘플 생성...")
+    generate_and_save_sample_set('normal', n_samples=300)
     
-    # 자극 반응 신호
-    stim_response = generate_stimulation_response()
-    save_as_csv(stim_response, 'stimulation_response.csv')
-    save_as_npy(stim_response, 'stimulation_response.npy')
-    save_as_hdf5(stim_response, 'stimulation_response.h5')
+    print("\n손상된 신경 신호 샘플 생성...")
+    generate_and_save_sample_set('damaged', n_samples=300)
     
-    # 잡음이 많은 신호
-    noisy_signal = generate_noisy_signal()
-    save_as_csv(noisy_signal, 'noisy_signal.csv')
-    save_as_npy(noisy_signal, 'noisy_signal.npy')
-    save_as_hdf5(noisy_signal, 'noisy_signal.h5')
+    print("\n자극 반응 신호 샘플 생성...")
+    generate_and_save_sample_set('stimulation', n_samples=300)
     
-    # 다채널 신경 신호
-    multichannel_signal = generate_multichannel_signal(num_channels=4)
-    save_as_csv(multichannel_signal, 'multichannel_signal.csv', multichannel=True)
-    save_as_npy(multichannel_signal, 'multichannel_signal.npy')
-    save_as_hdf5(multichannel_signal, 'multichannel_signal.h5', multichannel=True)
+    print("\n잡음이 많은 신호 샘플 생성...")
+    generate_and_save_sample_set('noisy', n_samples=100)
     
-    # 그림 생성
-    plot_and_save_figure(
-        [normal_signal, damaged_signal, stim_response, noisy_signal],
-        ['Normal Signal', 'Damaged Signal', 'Stimulation Response', 'Noisy Signal'],
-        'signal_comparison.png'
-    )
+    print("\n다채널 신호 샘플 생성...")
+    generate_multichannel_sample_set(n_samples=50)
     
-    # 다채널 신호 그림
-    plot_and_save_figure(
-        [multichannel_signal],
-        ['Multichannel Signal'],
-        'multichannel_signal.png'
-    )
+    # 처리된 샘플 생성 (processed 디렉토리)
+    print("\n처리된 샘플 데이터 생성...")
+    generate_processed_samples(n_samples=200)
     
-    # 데이터 설명 파일 생성
-    create_data_description()
-    
-    print("샘플 데이터 생성 완료!")
+    print("\n모든 샘플 데이터 생성 완료.")
+
 
 if __name__ == "__main__":
     main()
