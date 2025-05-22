@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="500" fill="#f8f9fa" rx="15" ry="15" />
+  
+  <!-- Dashboard Panel -->
+  <g>
+    <!-- Panel Background -->
+    <rect x="50" y="50" width="700" height="400" rx="10" ry="10" fill="#ffffff" stroke="#dee2e6" stroke-width="2" />
+    
+    <!-- Panel Header -->
+    <rect x="50" y="50" width="700" height="50" rx="10" ry="10" fill="#0d6efd" />
+    <text x="80" y="82" font-family="Arial, sans-serif" font-size="20" fill="#ffffff" font-weight="bold">실시간 신경 신호 모니터링</text>
+    
+    <!-- Signal Graph -->
+    <rect x="70" y="120" width="400" height="200" rx="5" ry="5" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1" />
+    
+    <!-- Animated Signal Line 1 -->
+    <path id="signal1" d="M70,220 Q90,180 110,210 Q130,240 150,200 Q170,160 190,190 Q210,220 230,180 Q250,140 270,170 Q290,200 310,160 Q330,120 350,150 Q370,180 390,150 Q410,120 430,160 Q450,200 470,220" fill="none" stroke="#0d6efd" stroke-width="3">
+      <animate attributeName="d" dur="5s" repeatCount="indefinite" 
+         values="M70,220 Q90,180 110,210 Q130,240 150,200 Q170,160 190,190 Q210,220 230,180 Q250,140 270,170 Q290,200 310,160 Q330,120 350,150 Q370,180 390,150 Q410,120 430,160 Q450,200 470,220;
+                 M70,200 Q90,230 110,190 Q130,150 150,180 Q170,210 190,170 Q210,130 230,160 Q250,190 270,150 Q290,110 310,140 Q330,170 350,130 Q370,90 390,120 Q410,150 430,110 Q450,140 470,200;
+                 M70,180 Q90,210 110,170 Q130,130 150,160 Q170,190 190,150 Q210,110 230,140 Q250,170 270,130 Q290,90 310,120 Q330,150 350,110 Q370,130 390,170 Q410,210 430,180 Q450,150 470,180;
+                 M70,220 Q90,180 110,210 Q130,240 150,200 Q170,160 190,190 Q210,220 230,180 Q250,140 270,170 Q290,200 310,160 Q330,120 350,150 Q370,180 390,150 Q410,120 430,160 Q450,200 470,220" />
+    </path>
+    
+    <!-- Animated Signal Line 2 -->
+    <path id="signal2" d="M70,240 Q90,260 110,230 Q130,200 150,230 Q170,260 190,230 Q210,200 230,230 Q250,260 270,230 Q290,200 310,230 Q330,260 350,230 Q370,200 390,230 Q410,260 430,230 Q450,200 470,240" fill="none" stroke="#dc3545" stroke-width="3">
+      <animate attributeName="d" dur="4s" repeatCount="indefinite" 
+         values="M70,240 Q90,260 110,230 Q130,200 150,230 Q170,260 190,230 Q210,200 230,230 Q250,260 270,230 Q290,200 310,230 Q330,260 350,230 Q370,200 390,230 Q410,260 430,230 Q450,200 470,240;
+                 M70,220 Q90,190 110,220 Q130,250 150,220 Q170,190 190,220 Q210,250 230,220 Q250,190 270,220 Q290,250 310,220 Q330,190 350,220 Q370,250 390,220 Q410,190 430,220 Q450,250 470,220;
+                 M70,200 Q90,230 110,200 Q130,170 150,200 Q170,230 190,200 Q210,170 230,200 Q250,230 270,200 Q290,170 310,200 Q330,230 350,200 Q370,170 390,200 Q410,230 430,200 Q450,170 470,200;
+                 M70,240 Q90,260 110,230 Q130,200 150,230 Q170,260 190,230 Q210,200 230,230 Q250,260 270,230 Q290,200 310,230 Q330,260 350,230 Q370,200 390,230 Q410,260 430,230 Q450,200 470,240" />
+    </path>
+    
+    <!-- Parameters Section -->
+    <rect x="490" y="120" width="240" height="200" rx="5" ry="5" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1" />
+    <text x="520" y="150" font-family="Arial, sans-serif" font-size="16" fill="#212529" font-weight="bold">자극 파라미터</text>
+    
+    <!-- Parameter Sliders -->
+    <g>
+      <!-- Frequency -->
+      <text x="510" y="180" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">주파수 (Hz):</text>
+      <rect x="510" y="190" width="200" height="10" rx="5" ry="5" fill="#e9ecef" />
+      <rect x="510" y="190" width="120" height="10" rx="5" ry="5" fill="#0d6efd">
+        <animate attributeName="width" dur="3s" repeatCount="indefinite" values="80;150;100;120" />
+      </rect>
+      <circle cx="630" cy="195" r="8" fill="#0d6efd" stroke="#ffffff" stroke-width="2">
+        <animate attributeName="cx" dur="3s" repeatCount="indefinite" values="590;660;610;630" />
+      </circle>
+      <text x="720" y="195" font-family="Arial, sans-serif" font-size="14" fill="#212529" font-weight="bold">50</text>
+      
+      <!-- Amplitude -->
+      <text x="510" y="220" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">진폭 (mA):</text>
+      <rect x="510" y="230" width="200" height="10" rx="5" ry="5" fill="#e9ecef" />
+      <rect x="510" y="230" width="80" height="10" rx="5" ry="5" fill="#dc3545">
+        <animate attributeName="width" dur="4s" repeatCount="indefinite" values="60;120;80;60" />
+      </rect>
+      <circle cx="590" cy="235" r="8" fill="#dc3545" stroke="#ffffff" stroke-width="2">
+        <animate attributeName="cx" dur="4s" repeatCount="indefinite" values="570;630;590;570" />
+      </circle>
+      <text x="720" y="235" font-family="Arial, sans-serif" font-size="14" fill="#212529" font-weight="bold">2.0</text>
+      
+      <!-- Pulse Width -->
+      <text x="510" y="260" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">펄스 폭 (µs):</text>
+      <rect x="510" y="270" width="200" height="10" rx="5" ry="5" fill="#e9ecef" />
+      <rect x="510" y="270" width="140" height="10" rx="5" ry="5" fill="#198754">
+        <animate attributeName="width" dur="5s" repeatCount="indefinite" values="120;170;100;140" />
+      </rect>
+      <circle cx="650" cy="275" r="8" fill="#198754" stroke="#ffffff" stroke-width="2">
+        <animate attributeName="cx" dur="5s" repeatCount="indefinite" values="630;680;610;650" />
+      </circle>
+      <text x="720" y="275" font-family="Arial, sans-serif" font-size="14" fill="#212529" font-weight="bold">200</text>
+    </g>
+    
+    <!-- Controls Section -->
+    <rect x="70" y="340" width="660" height="80" rx="5" ry="5" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1" />
+    
+    <!-- Control Buttons -->
+    <rect x="100" y="365" width="120" height="40" rx="5" ry="5" fill="#0d6efd" />
+    <text x="120" y="390" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" font-weight="bold">자극 시작</text>
+    
+    <rect x="240" y="365" width="120" height="40" rx="5" ry="5" fill="#dc3545" />
+    <text x="260" y="390" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" font-weight="bold">자극 중지</text>
+    
+    <rect x="380" y="365" width="120" height="40" rx="5" ry="5" fill="#198754" />
+    <text x="400" y="390" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" font-weight="bold">설정 저장</text>
+    
+    <rect x="520" y="365" width="120" height="40" rx="5" ry="5" fill="#6c757d" />
+    <text x="532" y="390" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" font-weight="bold">설정 불러오기</text>
+    
+    <!-- Status Indicator -->
+    <circle cx="670" y="385" r="15" fill="#198754">
+      <animate attributeName="fill" dur="2s" repeatCount="indefinite" values="#198754;#20c997;#198754" />
+    </circle>
+    <text x="665" y="390" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" font-weight="bold">●</text>
+  </g>
+  
+  <!-- Title and Caption -->
+  <text x="400" y="480" font-family="Arial, sans-serif" font-size="16" fill="#212529" text-anchor="middle">실시간 신경 신호 모니터링 및 자극 파라미터 제어 인터페이스</text>
+</svg>
